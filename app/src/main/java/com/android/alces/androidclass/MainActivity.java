@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
@@ -31,21 +32,12 @@ public class MainActivity extends Activity {
 
     EditText editTextUser;
     EditText editTextPass;
+    TextView tvMessages;
     Button btnLogin;
     Button btnRegister;
 
-    boolean auth = false;
-    boolean refused = false;
-    String userName = "";
+    boolean authCycle = false;
 
-//    public Handler msgHandler = new Handler()
-//    {
-//        public void handleMessage(Message msg)
-//        {
-//            super.handleMessage(msg);
-//            success();
-//        }
-//    };
     private Socket mSocket;
     {
         try{
@@ -64,8 +56,14 @@ public class MainActivity extends Activity {
 
         btnLogin = (Button) findViewById(R.id.button);
         btnRegister = (Button) findViewById(R.id.button2);
+
+        //To test functionality without implementation.
+        Button debugButton = (Button) findViewById(R.id.btnDebug);
+
         editTextUser = (EditText) findViewById(R.id.editText);
         editTextPass = (EditText) findViewById(R.id.editText2);
+
+        tvMessages = (TextView) findViewById(R.id.tvLoginMessages);
 
         mSocket.connect();
 
@@ -83,17 +81,41 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 setComponentsEnabled(false);
                 tryAuth();
-                //Intent myIntent = new Intent(MainActivity.this, Testbed.class);
-                //MainActivity.this.startActivity(myIntent);
             }
 
-            });
+        });
 
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 tryCreate();
             }});
+
+        debugButton.setOnClickListener(new View.OnClickListener() {
+
+
+            //When you click the button we wait for the server response.
+
+            //Establish event listeners for the socket object.
+            @Override
+            public void onClick(View v) {
+
+                JSONObject json = new JSONObject();
+                try {
+                    //room : args.roomName, creator:userName, isPrivate:args.isPrivate
+                    json.put("roomName", "roomname02");
+                    json.put("isPrivate", 0);
+                }
+                catch(JSONException ex)
+                {
+
+                }
+
+                mSocket.emit("create room", json);
+
+            }
+
+        });
     }
 
 
@@ -112,6 +134,7 @@ public class MainActivity extends Activity {
 
         mSocket.off("refuse", onRefuse);
         mSocket.off("approve", onApprove);
+        mSocket.off("createsuccess", onCreateSuccess);
     }
 
     @Override
@@ -138,7 +161,6 @@ public class MainActivity extends Activity {
 
     public void success()
     {
-
         Intent myIntent = new Intent(MainActivity.this, Testbed.class);
         MainActivity.this.startActivity(myIntent);
     }
@@ -151,7 +173,7 @@ public class MainActivity extends Activity {
 
     public void creationSuccess()
     {
-        editTextUser.setText("User Created!");
+        tvMessages.setText("User Created!");
         setComponentsEnabled(true);
     }
 
@@ -168,6 +190,10 @@ public class MainActivity extends Activity {
         }
         //Send some information to the server.
         mSocket.emit("authenticate", json);
+
+        //Create a timeout thread which will sit in the background and verify that everything is Kosher.
+        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+        thread.start();
     }
 
     private void tryCreate()
@@ -241,20 +267,32 @@ public class MainActivity extends Activity {
         }
     };
 
+    //Basically this is the ONLY place where we can interact with the UI thread once we've spun off.
     final Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
             if(msg.what==0){
-                editTextUser.setText("FAIL!");
+                authCycle = true;
+                tvMessages.setText("Failed to authenticate");
             }
             else if(msg.what == 1)
             {
+                authCycle = true;
                 success();
             }
             else if(msg.what == 2)
             {
+                authCycle = true;
                 creationSuccess();
             }
+            else if(msg.what == 3)
+            {
+                //timeout. authCycle prevents us from stepping on the toes of authentication
+                if(!authCycle) {
+                    tvMessages.setText("Connection timed out from the server");
+                }
+            }
+            setComponentsEnabled(true);
             super.handleMessage(msg);
         }
     };
