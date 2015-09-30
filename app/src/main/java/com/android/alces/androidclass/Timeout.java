@@ -1,5 +1,6 @@
 package com.android.alces.androidclass;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
@@ -35,6 +36,7 @@ public class Timeout implements Runnable{
 
         Message msg = handler.obtainMessage();
         msg.what = 3;
+
         handler.sendMessage(msg);
     }
 }

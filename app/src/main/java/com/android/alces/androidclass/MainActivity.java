@@ -42,6 +42,8 @@ public class MainActivity extends Activity {
     {
         try{
             mSocket = IO.socket("http://MovieCatalog.cloudapp.net:8080/");
+            //Keep track of the socket in global space.
+            Global.globalSocket = mSocket;
         }
         catch(URISyntaxException e)
         {
@@ -66,6 +68,9 @@ public class MainActivity extends Activity {
         tvMessages = (TextView) findViewById(R.id.tvLoginMessages);
 
         mSocket.connect();
+
+        //TODO: Handle a non-connection situation.
+        //Something like if(mSocket.isConnected()....
 
         mSocket.on("refuse", onRefuse);
         mSocket.on("approve", onApprove);
@@ -161,14 +166,8 @@ public class MainActivity extends Activity {
 
     public void success()
     {
-        Intent myIntent = new Intent(MainActivity.this, Testbed.class);
+        Intent myIntent = new Intent(MainActivity.this, RoomsActivity.class);
         MainActivity.this.startActivity(myIntent);
-    }
-
-    public void failure()
-    {
-        editTextUser.setText("FAIL!");
-        setComponentsEnabled(true);
     }
 
     public void creationSuccess()
