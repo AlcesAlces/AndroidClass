@@ -29,6 +29,14 @@
             android:name=".RoomsActivity"
             android:label="@string/title_activity_rooms" >
         </activity>
+        <activity
+            android:name=".Register"
+            android:label="@string/title_activity_register" >
+        </activity>
+        <activity
+            android:name=".ActiveRoom"
+            android:label="@string/title_activity_active_room" >
+        </activity>
     </application>
 
 </manifest>
