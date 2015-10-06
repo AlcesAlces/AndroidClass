@@ -12,6 +12,14 @@
         android:orientation="vertical"
         android:layout_weight=".6">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome to Walker Talker"
+            android:id="@+id/tvLoginWelcome"
+            android:layout_gravity="center"
+            android:textSize="24sp"/>
+
         <EditText
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -33,16 +41,32 @@
         android:layout_height="fill_parent"
         android:layout_width="fill_parent"
         android:orientation="horizontal"
-        android:layout_weight=".6">
+        android:layout_weight=".9"
+        android:gravity="center">
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Log in"
-            android:id="@+id/button"
-            android:layout_centerVertical="true"
-            android:layout_toLeftOf="@+id/editText"
-            android:layout_toStartOf="@+id/editText" />
+            android:id="@+id/button"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:orientation="vertical"
+        android:layout_weight=".9"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Don't have an account?"
+            android:id="@+id/tvLoginAccount"
+            android:layout_above="@+id/button"
+            android:layout_alignLeft="@+id/editText2"
+            android:layout_alignStart="@+id/editText2" />
 
         <Button
             android:layout_width="wrap_content"
@@ -53,30 +77,22 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Debug"
-            android:id="@+id/btnDebug"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_height="fill_parent"
-        android:layout_width="fill_parent"
-        android:orientation="horizontal"
-        android:layout_weight=".9">
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Messages Show Here"
+            android:text="..."
             android:id="@+id/tvLoginMessages"
             android:layout_above="@+id/button"
             android:layout_alignLeft="@+id/editText2"
             android:layout_alignStart="@+id/editText2" />
 
     </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Debug"
+        android:id="@+id/btnDebug"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 </LinearLayout>
