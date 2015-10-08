@@ -1,6 +1,7 @@
 package com.android.alces.androidclass;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
@@ -35,6 +36,7 @@ public class MainActivity extends Activity {
     TextView tvMessages;
     Button btnLogin;
     Button btnRegister;
+    ProgressDialog dialog;
 
     boolean authCycle = false;
 
@@ -180,6 +182,11 @@ public class MainActivity extends Activity {
     {
         JSONObject json = new JSONObject();
         try {
+            dialog = new ProgressDialog(this);
+            dialog.setMessage("Logging in. Please wait....");
+            dialog.setIndeterminate(true);
+            dialog.show();
+
             json.put("name", editTextUser.getText().toString());
             json.put("pass", editTextPass.getText().toString());
         }
@@ -213,7 +220,8 @@ public class MainActivity extends Activity {
     private Emitter.Listener onRefuse = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-//            JSONObject data = (JSONObject) args[0];
+
+            String message = (String) args[0];
 //
 //            int numUsers;
 //            try {
@@ -226,6 +234,7 @@ public class MainActivity extends Activity {
             //https://github.com/nkzawa/socket.io-android-chat/blob/master/app/src/main/java/com/github/nkzawa/socketio/androidchat/MainFragment.java
             Message msg = handler.obtainMessage();
             msg.what = 0;
+            msg.obj = message;
             handler.sendMessage(msg);
         }
     };
@@ -270,9 +279,12 @@ public class MainActivity extends Activity {
     final Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
+
+            dialog.dismiss();
+
             if(msg.what==0){
                 authCycle = true;
-                tvMessages.setText("Failed to authenticate");
+                tvMessages.setText((String)msg.obj);
             }
             else if(msg.what == 1)
             {
