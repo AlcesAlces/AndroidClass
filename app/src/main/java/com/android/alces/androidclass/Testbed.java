@@ -24,7 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-
+//TODO: Remove this class
 public class Testbed extends AppCompatActivity {
 
     private static final String LOG_TAG = "AudioRecordTest";
