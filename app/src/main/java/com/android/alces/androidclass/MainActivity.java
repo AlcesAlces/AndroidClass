@@ -23,6 +23,7 @@ import com.github.nkzawa.socketio.client.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Console;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +77,6 @@ public class MainActivity extends Activity {
 
         mSocket.on("refuse", onRefuse);
         mSocket.on("approve", onApprove);
-        mSocket.on("createsuccess", onCreateSuccess);
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
 
@@ -95,7 +95,8 @@ public class MainActivity extends Activity {
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tryCreate();
+                Intent myIntent = new Intent(MainActivity.this, Register.class);
+                MainActivity.this.startActivity(myIntent);
             }});
 
         debugButton.setOnClickListener(new View.OnClickListener() {
@@ -141,7 +142,6 @@ public class MainActivity extends Activity {
 
         mSocket.off("refuse", onRefuse);
         mSocket.off("approve", onApprove);
-        mSocket.off("createsuccess", onCreateSuccess);
     }
 
     @Override
@@ -166,8 +166,7 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void success()
-    {
+    public void success() {
         Intent myIntent = new Intent(MainActivity.this, RoomsActivity.class);
         MainActivity.this.startActivity(myIntent);
     }
@@ -200,21 +199,6 @@ public class MainActivity extends Activity {
         //Create a timeout thread which will sit in the background and verify that everything is Kosher.
         Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
         thread.start();
-    }
-
-    private void tryCreate()
-    {
-        JSONObject json = new JSONObject();
-        try {
-            json.put("name", editTextUser.getText().toString());
-            json.put("pass", editTextPass.getText().toString());
-        }
-        catch(JSONException ex)
-        {
-
-        }
-        //Send some information to the server.
-        mSocket.emit("create", json);
     }
 
     private Emitter.Listener onRefuse = new Emitter.Listener() {
@@ -257,30 +241,18 @@ public class MainActivity extends Activity {
         }
     };
 
-    private Emitter.Listener onCreateSuccess = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-//            JSONObject data = (JSONObject) args[0];
-//
-//            int numUsers;
-//            try {
-//                numUsers = data.getInt("numUsers");
-//            } catch (JSONException e) {
-//                return;
-//            }
-
-            Message msg = handler.obtainMessage();
-            msg.what = 2;
-            handler.sendMessage(msg);
-        }
-    };
-
     //Basically this is the ONLY place where we can interact with the UI thread once we've spun off.
     final Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
 
-            dialog.dismiss();
+            try {
+                dialog.dismiss();
+            }
+            catch(Exception ex)
+            {
+
+            }
 
             if(msg.what==0){
                 authCycle = true;

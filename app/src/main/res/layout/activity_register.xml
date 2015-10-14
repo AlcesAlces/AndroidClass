@@ -25,9 +25,8 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:inputType="textPassword"
-            android:id="@+id/registerPasswordText"
+            android:id="@+id/etPasswordRegister"
             android:hint="Password"
-            android:layout_below="@+id/etPasswordRegister"
             android:layout_weight=".5"/>
 
         <EditText
@@ -49,8 +48,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Create Account"
-            android:id="@+id/button2"
-            android:layout_alignTop="@+id/btnCreateRegister"
+            android:id="@+id/btnCreateRegister"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
 
