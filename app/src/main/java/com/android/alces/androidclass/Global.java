@@ -8,4 +8,5 @@ import com.github.nkzawa.socketio.client.Socket;
 public final class Global {
 
     public static com.github.nkzawa.socketio.client.Socket globalSocket;
+    public static String userName = null;
 }

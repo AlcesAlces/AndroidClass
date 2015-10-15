@@ -37,6 +37,11 @@
             android:name=".ActiveRoom"
             android:label="@string/title_activity_active_room" >
         </activity>
+
+        <activity
+            android:name=".CreateRoomActivity"
+            android:label="@string/title_activity_create_room" >
+        </activity>
     </application>
 
 </manifest>

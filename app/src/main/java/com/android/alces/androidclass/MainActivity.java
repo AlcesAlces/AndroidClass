@@ -188,6 +188,7 @@ public class MainActivity extends Activity {
 
             json.put("name", editTextUser.getText().toString());
             json.put("pass", editTextPass.getText().toString());
+            Global.userName = editTextUser.getText().toString();
         }
         catch(JSONException ex)
         {

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -54,6 +56,15 @@ public class RoomsActivity extends Activity {
         //TODO: Watch for timeout
         mSocket.emit("get all rooms", "nothing");
 
+        Button createButton = (Button) findViewById(R.id.btnCreateRooms);
+
+        createButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent = new Intent(RoomsActivity.this, CreateRoomActivity.class);
+                RoomsActivity.this.startActivity(myIntent);
+            }});
+
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -67,7 +78,7 @@ public class RoomsActivity extends Activity {
                 }
                 catch(JSONException ex)
                 {
-
+                    //TODO: handle error
                 }
 
                 //TODO: Handle this fully.
