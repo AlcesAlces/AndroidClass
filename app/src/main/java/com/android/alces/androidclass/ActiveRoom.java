@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.gson.Gson;
+
 public class ActiveRoom extends Activity {
 
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
@@ -15,6 +17,26 @@ public class ActiveRoom extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_active_room);
+
+        Room thisRoom = null;
+        Bundle extras = getIntent().getExtras();
+        //The bundle is a serialized json object with the Gson code.
+        if(extras != null)
+        {
+            //Deserialize
+            String jsonObject = extras.getString("payload");
+            thisRoom = new Gson().fromJson(jsonObject, Room.class);
+            //The send size of this is gonna look like:
+//            Intent activity = new Intent(MyActivity.this,NextActivity.class);
+//            activity.putExtra("myObject", new Gson().toJson(myobject));
+//            startActivity(activity);
+        }
+        else
+        {
+            //TODO: Handle this. Someone didn't pass information correctly.
+            finish();
+        }
+
     }
 
     @Override
