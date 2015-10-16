@@ -184,23 +184,19 @@ public class RoomsActivity extends Activity {
     };
 
 
-    final Handler handler = new Handler(){
+    Handler handler = new Handler(new Handler.Callback() {
         @Override
-        public void handleMessage(Message msg) {
-            if(msg.what==0) {
+        public boolean handleMessage(Message msg) {
+            if (msg.what == 0) {
                 //TODO: This is a crappy way to do this. Switch to a custom list adapter.
                 JSONArray tempJson = (JSONArray) msg.obj;
                 ArrayList<Room> listItems = new ArrayList<>();
 
                 dialog.dismiss();
-                for(int i = 0; i < tempJson.length(); i++)
-                {
-                    try
-                    {
-                    listItems.add(new Room(tempJson.getJSONObject(i)));
-                    }
-                    catch(JSONException ex)
-                    {
+                for (int i = 0; i < tempJson.length(); i++) {
+                    try {
+                        listItems.add(new Room(tempJson.getJSONObject(i)));
+                    } catch (JSONException ex) {
 
                     }
                 }
@@ -212,10 +208,9 @@ public class RoomsActivity extends Activity {
                 lv.setAdapter(adapter);
             }
             //Reauth message
-            else if(msg.what == 1)
-            {
+            else if (msg.what == 1) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(RoomsActivity.this);
-                builder.setMessage((String)msg.obj)
+                builder.setMessage((String) msg.obj)
                         .setCancelable(false)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
@@ -226,7 +221,7 @@ public class RoomsActivity extends Activity {
 
                 alert.show();
             }
-            super.handleMessage(msg);
+            return true;
         }
-    };
+    });
 }

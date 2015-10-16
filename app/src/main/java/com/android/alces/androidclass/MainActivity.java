@@ -243,9 +243,9 @@ public class MainActivity extends Activity {
     };
 
     //Basically this is the ONLY place where we can interact with the UI thread once we've spun off.
-    final Handler handler = new Handler(){
+    Handler handler = new Handler(new Handler.Callback() {
         @Override
-        public void handleMessage(Message msg) {
+        public boolean handleMessage(Message msg) {
 
             try {
                 dialog.dismiss();
@@ -277,7 +277,7 @@ public class MainActivity extends Activity {
                 }
             }
             setComponentsEnabled(true);
-            super.handleMessage(msg);
+            return true;
         }
-    };
+    });
 }

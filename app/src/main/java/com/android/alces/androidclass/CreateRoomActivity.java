@@ -190,6 +190,51 @@ public class CreateRoomActivity extends Activity {
         }
     };
 
+    Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            try {
+                dialog.dismiss();
+            }
+            catch(Exception ex)
+            {
+
+            }
+
+            if(msg.what==0){
+                done = true;
+                AlertDialog.Builder builder = new AlertDialog.Builder(CreateRoomActivity.this);
+                builder.setMessage((String)msg.obj)
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //TODO: Reload the RoomsActivity listview so it displays the new thing
+                                finish();
+                            }
+                        });
+                AlertDialog alert = builder.create();
+
+                alert.show();
+            }
+            else if(msg.what == 1)
+            {
+                //Refused for some reason.
+                done = true;
+                //TODO: Show refusal message somehow
+            }
+            else if(msg.what == 3)
+            {
+                //timeout. authCycle prevents us from stepping on the toes of authentication
+                if(!done) {
+                    //TODO: Create timeout display code.
+                }
+            }
+            return true;
+        }
+    });
+
+    /*
+    //depreciated stuff. historically significant.
     final Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -234,4 +279,5 @@ public class CreateRoomActivity extends Activity {
             super.handleMessage(msg);
         }
     };
+    */
 }

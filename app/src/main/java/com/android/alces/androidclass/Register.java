@@ -163,9 +163,9 @@ public class Register extends Activity {
         thread.start();
     }
 
-    final private Handler handler = new Handler(){
+    Handler handler = new Handler(new Handler.Callback() {
         @Override
-        public void handleMessage(Message msg) {
+        public boolean handleMessage(Message msg) {
 
             if(dialog != null)
             {
@@ -199,7 +199,7 @@ public class Register extends Activity {
                     tvMessage.setText("Connection timed out from the server");
                 }
             }
-            super.handleMessage(msg);
+            return true;
         }
-    };
+    });
 }
