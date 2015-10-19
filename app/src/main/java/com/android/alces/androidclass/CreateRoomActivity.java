@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -209,6 +210,9 @@ public class CreateRoomActivity extends Activity {
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 //TODO: Reload the RoomsActivity listview so it displays the new thing
+                                Intent intent = new Intent();
+                                intent.putExtra("payload", "something");
+                                setResult(RESULT_OK, intent);
                                 finish();
                             }
                         });

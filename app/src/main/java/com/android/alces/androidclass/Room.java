@@ -13,6 +13,7 @@ public class Room {
     public String creator;
     public String name;
     public boolean isPrivate;
+    public RangeInfo rangeInfo;
     //TODO: Going to add another property to check for who is in the room
 
     //Create the room object from a JSONObject. Ezpz
@@ -29,7 +30,6 @@ public class Room {
         {
 
         }
-
     }
 
     @Override

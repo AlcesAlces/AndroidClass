@@ -8,5 +8,6 @@
     <string name="title_activity_register">Register</string>
     <string name="title_activity_active_room">Active Room</string>
     <string name="title_activity_create_room">Create Room</string>
+    <string name="title_activity_edit_room">Edit Room</string>
 
 </resources>

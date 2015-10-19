@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,6 +35,7 @@ public class RoomsActivity extends Activity {
     private ListView lv;
     private ArrayAdapter<Room> adapter;
     ProgressDialog dialog;
+    private Room attempt = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,16 +47,12 @@ public class RoomsActivity extends Activity {
         //TODO: Check for non-connected socket.
         mSocket.on("server error", serverError);
 
-        //TODO: More general solution for this
-        dialog = new ProgressDialog(this);
-        dialog.setMessage("Retrieving frequency information");
-        dialog.setIndeterminate(true);
-        dialog.show();
+        getAllRooms();
 
         mSocket.on("all rooms", displayAllRooms);
         mSocket.on("reauth", reAuth);
         //TODO: Watch for timeout
-        mSocket.emit("get all rooms", "nothing");
+
 
         Button createButton = (Button) findViewById(R.id.btnCreateRooms);
 
@@ -62,31 +60,19 @@ public class RoomsActivity extends Activity {
             @Override
             public void onClick(View v) {
                 Intent myIntent = new Intent(RoomsActivity.this, CreateRoomActivity.class);
-                RoomsActivity.this.startActivity(myIntent);
-            }});
+                RoomsActivity.this.startActivityForResult(myIntent, 1);
+            }
+        });
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int i = 0;
-                //Dereference
-                Room lvi = (Room)lv.getItemAtPosition(position);
-
-                JSONObject json = new JSONObject();
-                try {
-                    json.put("roomId", lvi.roomId);
-                }
-                catch(JSONException ex)
-                {
-                    //TODO: handle error
-                }
-
-                //TODO: Handle this fully.
-                mSocket.emit("join room", json);
-
-                //TODO: Create a context menu about joining.
+                tryJoin(position);
             }
         });
+
+
+        mSocket.on("join_success", joinSuccess);
     }
 
     @Override
@@ -95,6 +81,7 @@ public class RoomsActivity extends Activity {
         super.onDestroy();
         mSocket.off("server error", serverError);
         mSocket.off("all rooms", displayAllRooms);
+        mSocket.off("join_success", joinSuccess);
     }
 
     @Override
@@ -117,6 +104,48 @@ public class RoomsActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent)
+    {
+        if(requestCode == 1)
+        {
+            if(resultCode == RESULT_OK) {
+                getAllRooms();
+            }
+        }
+    }
+
+    private void getAllRooms()
+    {
+        dialog = new ProgressDialog(this);
+        dialog.setMessage("Retrieving frequency information");
+        dialog.setIndeterminate(true);
+        dialog.show();
+        mSocket.emit("get all rooms", "nothing");
+    }
+
+    private void tryJoin(int position)
+    {
+        Room lvi = (Room)lv.getItemAtPosition(position);
+        attempt = lvi;
+        JSONObject json = new JSONObject();
+        try {
+            json.put("roomId", lvi.roomId);
+        }
+        catch(JSONException ex)
+        {
+            //TODO: handle error
+        }
+
+        //TODO: Handle this fully.
+        mSocket.emit("join_room", json);
+
+        dialog = new ProgressDialog(this);
+        dialog.setMessage("Joining. Please wait....");
+        dialog.setIndeterminate(true);
+        dialog.show();
     }
 
     private Emitter.Listener displayAllRooms = new Emitter.Listener() {
@@ -183,10 +212,39 @@ public class RoomsActivity extends Activity {
         }
     };
 
+    private Emitter.Listener joinSuccess = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+//            JSONObject data = (JSONObject) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+            //SO! Basically at this point we need to set up a messenger to
+            //communicate with the main thread. I suggest looking at:
+            //https://github.com/nkzawa/socket.io-android-chat/blob/master/app/src/main/java/com/github/nkzawa/socketio/androidchat/MainFragment.java
+            Message msg = handler.obtainMessage();
+            msg.what = 2;
+            handler.sendMessage(msg);
+        }
+    };
+
 
     Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
+
+            try {
+                dialog.dismiss();
+            }
+            catch(Exception ex)
+            {
+
+            }
+
             if (msg.what == 0) {
                 //TODO: This is a crappy way to do this. Switch to a custom list adapter.
                 JSONArray tempJson = (JSONArray) msg.obj;
@@ -201,6 +259,8 @@ public class RoomsActivity extends Activity {
                     }
                 }
 
+                //TODO: Sort listItems. Java doesn't have built in stuff so may have to write custom.
+
                 adapter = new ArrayAdapter<Room>(getBaseContext(),
                         android.R.layout.simple_list_item_1,
                         listItems);
@@ -214,12 +274,27 @@ public class RoomsActivity extends Activity {
                         .setCancelable(false)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
+                                //TODO: This is not really valid. Create an intelligent reauth system
                                 finish();
                             }
                         });
                 AlertDialog alert = builder.create();
 
                 alert.show();
+            }
+            else if (msg.what == 2)
+            {
+                if(attempt != null)
+                {
+                    Intent activity = new Intent(RoomsActivity.this, ActiveRoom.class);
+                 //   Intent activity = new Intent(MyActivity.this,NextActivity.class);
+                    activity.putExtra("payload", new Gson().toJson(attempt));
+                    startActivityForResult(activity, 1);
+                }
+            }
+            else if(msg.what == 3)
+            {
+                //TODO: Add timeout to this section
             }
             return true;
         }

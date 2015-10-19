@@ -2,22 +2,21 @@ package com.android.alces.androidclass;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 
-import com.github.nkzawa.engineio.client.Socket;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ActiveRoom extends Activity {
-
+public class RoomEditActivity extends Activity {
     Room thisRoom = null;
     private com.github.nkzawa.socketio.client.Socket mSocket = Global.globalSocket;
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
@@ -26,7 +25,7 @@ public class ActiveRoom extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_active_room);
+        setContentView(R.layout.activity_edit_room);
 
         Bundle extras = getIntent().getExtras();
         //The bundle is a serialized json object with the Gson code.
@@ -36,46 +35,19 @@ public class ActiveRoom extends Activity {
             String jsonObject = extras.getString("payload");
             thisRoom = new Gson().fromJson(jsonObject, Room.class);
 
-            ((TextView) findViewById(R.id.tvRoomFrequencyName)).setText(thisRoom.name);
+            setComponentsByRoom(thisRoom);
         }
         else
         {
             //TODO: Handle this. Someone didn't pass information correctly.
             finish();
         }
-
-        Button settingsButton = (Button) findViewById(R.id.active_button_edit);
-
-        settingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent activity = new Intent(ActiveRoom.this, RoomEditActivity.class);
-                activity.putExtra("payload", new Gson().toJson(thisRoom));
-                startActivity(activity);
-            }
-        });
-
     }
 
     @Override
     protected void onDestroy()
     {
         super.onDestroy();
-
-        JSONObject json = new JSONObject();
-        try {
-            json.put("roomId", thisRoom.roomId);
-        }
-        catch(JSONException ex)
-        {
-            //TODO: handle error
-        }
-
-        mSocket.emit("leave_room", json);
-
-        Intent intent = new Intent();
-        intent.putExtra("payload", "this is pointless kek");
-        setResult(RESULT_OK, intent);
     }
 
     @Override
@@ -98,5 +70,36 @@ public class ActiveRoom extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /*
+    Note: The way to update this is to pass the object in and it will edit all of the values.
+    The object will NOT be updated into the database until the button is pressed.
+     */
+    public void setComponentsByRoom(Room toSet)
+    {
+        //Components
+        //Check boxes
+        CheckBox cbPrivate = (CheckBox) findViewById(R.id.edit_checkBox_fprivate);
+        CheckBox cbRange = (CheckBox) findViewById(R.id.edit_checkBox_frange);
+        //Edit Texts
+        EditText etName = (EditText) findViewById(R.id.edit_editText_fname);
+        EditText etAddUser = (EditText) findViewById(R.id.edit_editText_addUser);
+        EditText etRemoveUser = (EditText) findViewById(R.id.edit_editText_removeUser);
+        //Text View
+        TextView tvOrigin = (TextView) findViewById(R.id.edit_tv_originValue);
+        //Buttons
+        Button btnResetOrigin = (Button) findViewById(R.id.edit_button_reset);
+        Button btnDisband = (Button) findViewById(R.id.edit_button_disband);
+        Button btnUpdate = (Button) findViewById(R.id.edit_button_update);
+
+        //Frequency range settings
+        //TODO: Frequency range integration. Including Resetting the origin.
+
+        //Privacy settings
+        cbPrivate.setChecked(toSet.isPrivate);
+
+        //Text box settings
+        etName.setText(toSet.name);
     }
 }
