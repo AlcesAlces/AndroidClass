@@ -25,9 +25,13 @@ public class Room {
             name = inputJson.get("_room").toString();
             isPrivate = (Integer.parseInt((inputJson.get("_isPrivate").toString()))
                          == 0 ? false : true);
+<<<<<<< HEAD
             rangeInfo.range = (Double.parseDouble(inputJson.get("_range").toString()));
             rangeInfo.isRanged = (Integer.parseInt((inputJson.get("_isRanged").toString()))
                                 == 0 ? false : true);
+=======
+            rangeInfo = new RangeInfo(inputJson);
+>>>>>>> origin/master
         }
         catch(JSONException exception)
         {
@@ -39,6 +43,12 @@ public class Room {
     public String toString()
     {
         return this.name;
+    }
+
+    public void updateRangeLatLon(double lat, double lon)
+    {
+        rangeInfo.lat = lat;
+        rangeInfo.lon = lon;
     }
 
 }

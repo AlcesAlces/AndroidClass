@@ -2,7 +2,10 @@ package com.android.alces.androidclass;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -108,18 +111,8 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                JSONObject json = new JSONObject();
-                try {
-                    //room : args.roomName, creator:userName, isPrivate:args.isPrivate
-                    json.put("roomName", "roomname02");
-                    json.put("isPrivate", 0);
-                }
-                catch(JSONException ex)
-                {
-
-                }
-
-                mSocket.emit("create room", json);
+                Intent myIntent = new Intent(MainActivity.this, ActiveLocation.class);
+                MainActivity.this.startActivity(myIntent);
 
             }
 
@@ -186,11 +179,24 @@ public class MainActivity extends Activity {
             dialog.setIndeterminate(true);
             dialog.show();
 
+            //TODO: Need to check for more cases here.
+            LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            double longitude = location.getLongitude();
+            double latitude = location.getLatitude();
+
             json.put("name", editTextUser.getText().toString());
             json.put("pass", editTextPass.getText().toString());
-            Global.userName = editTextUser.getText().toString();
+            json.put("lat", latitude);
+            json.put("lon", longitude);
+
+            Global._user = new User(editTextUser.getText().toString(), latitude, longitude);
         }
         catch(JSONException ex)
+        {
+
+        }
+        catch(SecurityException ex)
         {
 
         }
