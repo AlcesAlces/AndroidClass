@@ -86,6 +86,7 @@ public class RoomEditActivity extends Activity {
         EditText etName = (EditText) findViewById(R.id.edit_editText_fname);
         EditText etAddUser = (EditText) findViewById(R.id.edit_editText_addUser);
         EditText etRemoveUser = (EditText) findViewById(R.id.edit_editText_removeUser);
+        EditText etRange = (EditText) findViewById(R.id.edit_editText_frange);
         //Text View
         TextView tvOrigin = (TextView) findViewById(R.id.edit_tv_originValue);
         //Buttons
@@ -93,8 +94,10 @@ public class RoomEditActivity extends Activity {
         Button btnDisband = (Button) findViewById(R.id.edit_button_disband);
         Button btnUpdate = (Button) findViewById(R.id.edit_button_update);
 
-        //Frequency range settings
+        //Frequency range settings. isRanged, range, and origin
         //TODO: Frequency range integration. Including Resetting the origin.
+        cbRange.setChecked(toSet.rangeInfo.isRanged);
+        etRange.setText(Double.toString(toSet.rangeInfo.range));
 
         //Privacy settings
         cbPrivate.setChecked(toSet.isPrivate);

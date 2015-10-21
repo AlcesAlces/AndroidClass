@@ -134,6 +134,7 @@ public class CreateRoomActivity extends Activity {
             json.put("_room", name);
             json.put("_isPrivate", isPrivate ? 1 : 0);
             json.put("_range", range);
+            json.put("_isRanged", isRanged ? 1 : 0);
         }
         catch(JSONException ex)
         {
@@ -258,7 +259,7 @@ public class CreateRoomActivity extends Activity {
                         .setCancelable(false)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                //TODO: Reload the RoomsActivity listview so it displays the new thing
+                                //TODOLD: Reload the RoomsActivity listview so it displays the new thing
                                 finish();
                             }
                         });
@@ -270,13 +271,13 @@ public class CreateRoomActivity extends Activity {
             {
                 //Refused for some reason.
                 done = true;
-                //TODO: Show refusal message somehow
+                //TODOLD: Show refusal message somehow
             }
             else if(msg.what == 3)
             {
                 //timeout. authCycle prevents us from stepping on the toes of authentication
                 if(!done) {
-                    //TODO: Create timeout display code.
+                    //TODOLD: Create timeout display code.
                 }
             }
 

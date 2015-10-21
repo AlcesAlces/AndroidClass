@@ -21,10 +21,13 @@ public class Room {
     {
         try {
             roomId = inputJson.get("_id").toString();
-            creator = inputJson.get("creator").toString();
-            name = inputJson.get("room").toString();
-            isPrivate = (Integer.parseInt((inputJson.get("isPrivate").toString()))
+            creator = inputJson.get("_creator").toString();
+            name = inputJson.get("_room").toString();
+            isPrivate = (Integer.parseInt((inputJson.get("_isPrivate").toString()))
                          == 0 ? false : true);
+            rangeInfo.range = (Double.parseDouble(inputJson.get("_range").toString()));
+            rangeInfo.isRanged = (Integer.parseInt((inputJson.get("_isRanged").toString()))
+                                == 0 ? false : true);
         }
         catch(JSONException exception)
         {
