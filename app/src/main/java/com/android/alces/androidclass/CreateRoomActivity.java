@@ -101,7 +101,7 @@ public class CreateRoomActivity extends Activity {
         //TODO: something something preprocess data
         String name = etRoomName.getText().toString();
         //Default in "Anonymous User" in case somehow the user got in here without their name.
-        String creator = Global.userName == null ? "Anonymous User" : Global.userName;
+        String creator = Global._user == null ? "Anonymous User" : Global._user.name;
 
         String rangeToProcess = etFrequencyRange.getText().toString();
         rangeToProcess = rangeToProcess.trim();

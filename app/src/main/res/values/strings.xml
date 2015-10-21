@@ -9,5 +9,6 @@
     <string name="title_activity_active_room">Active Room</string>
     <string name="title_activity_create_room">Create Room</string>
     <string name="title_activity_edit_room">Edit Room</string>
+    <string name="title_activity_active_location">Map</string>
 
 </resources>

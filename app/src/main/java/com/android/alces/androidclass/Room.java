@@ -25,6 +25,7 @@ public class Room {
             name = inputJson.get("room").toString();
             isPrivate = (Integer.parseInt((inputJson.get("isPrivate").toString()))
                          == 0 ? false : true);
+            rangeInfo = new RangeInfo(inputJson);
         }
         catch(JSONException exception)
         {
@@ -36,6 +37,12 @@ public class Room {
     public String toString()
     {
         return this.name;
+    }
+
+    public void updateRangeLatLon(double lat, double lon)
+    {
+        rangeInfo.lat = lat;
+        rangeInfo.lon = lon;
     }
 
 }

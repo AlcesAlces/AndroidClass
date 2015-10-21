@@ -246,7 +246,6 @@ public class RoomsActivity extends Activity {
             }
 
             if (msg.what == 0) {
-                //TODO: This is a crappy way to do this. Switch to a custom list adapter.
                 JSONArray tempJson = (JSONArray) msg.obj;
                 ArrayList<Room> listItems = new ArrayList<>();
 
