@@ -65,9 +65,6 @@ public class MainActivity extends Activity {
         btnLogin = (Button) findViewById(R.id.button);
         btnRegister = (Button) findViewById(R.id.button2);
 
-        //To test functionality without implementation.
-        Button debugButton = (Button) findViewById(R.id.btnDebug);
-
         editTextUser = (EditText) findViewById(R.id.editText);
         editTextPass = (EditText) findViewById(R.id.editText2);
 
@@ -101,22 +98,6 @@ public class MainActivity extends Activity {
                 Intent myIntent = new Intent(MainActivity.this, Register.class);
                 MainActivity.this.startActivity(myIntent);
             }});
-
-        debugButton.setOnClickListener(new View.OnClickListener() {
-
-
-            //When you click the button we wait for the server response.
-
-            //Establish event listeners for the socket object.
-            @Override
-            public void onClick(View v) {
-
-                Intent myIntent = new Intent(MainActivity.this, ActiveLocation.class);
-                MainActivity.this.startActivity(myIntent);
-
-            }
-
-        });
     }
 
 
