@@ -45,4 +45,24 @@ public class Room {
         rangeInfo.lon = lon;
     }
 
+    public void updateRoomName (String newName)
+    {
+        name = newName;
+    }
+
+    public void updateIsPrivate(Boolean toggle)
+    {
+        isPrivate = toggle;
+    }
+
+    public void updateIsRanged (Boolean toggle)
+    {
+        rangeInfo.isRanged = toggle;
+    }
+
+    public void updateRange (double newRange)
+    {
+        rangeInfo.range = newRange;
+    }
+
 }

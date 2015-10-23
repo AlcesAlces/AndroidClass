@@ -2,6 +2,7 @@ package com.android.alces.androidclass;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -54,9 +55,9 @@ public class RoomEditActivity extends Activity {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(RoomEditActivity.this);
-                builder.setMessage("How do you want to set your location?")
+                builder.setMessage("Reset the origin of the frequency to your current location?")
                         .setCancelable(false)
-                        .setPositiveButton("Current Location", new DialogInterface.OnClickListener() {
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
 
                                 try {
@@ -73,10 +74,9 @@ public class RoomEditActivity extends Activity {
                                 }
                             }
                         })
-                        .setNegativeButton("Use Map", new DialogInterface.OnClickListener() {
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-
-                                //TODO: Open a map and let them poke to get a location
+                                return;
                             }
                         });
                 AlertDialog alert = builder.create();
@@ -85,7 +85,16 @@ public class RoomEditActivity extends Activity {
             }
         });
 
+        Button btnUpdate = (Button) findViewById(R.id.edit_button_update);
 
+        btnUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateFrequency();
+            }
+        });
+
+        updateLatLon();
     }
 
     @Override
@@ -138,8 +147,6 @@ public class RoomEditActivity extends Activity {
         Button btnDisband = (Button) findViewById(R.id.edit_button_disband);
         Button btnUpdate = (Button) findViewById(R.id.edit_button_update);
 
-        //Frequency range settings. isRanged, range, and origin
-        //TODO: Frequency range integration. Including Resetting the origin.
         cbRange.setChecked(toSet.rangeInfo.isRanged);
         etRange.setText(Double.toString(toSet.rangeInfo.range));
 
@@ -154,5 +161,28 @@ public class RoomEditActivity extends Activity {
     {
         TextView tvOrigin = (TextView) findViewById(R.id.edit_tv_originValue);
         tvOrigin.setText(thisRoom.rangeInfo.toString());
+    }
+
+    public void updateFrequency()
+    {
+        thisRoom.updateRoomName(((EditText) findViewById(R.id.edit_editText_fname)).getText().toString());
+        thisRoom.updateIsPrivate(((CheckBox) findViewById(R.id.edit_checkBox_fprivate)).isChecked());
+        thisRoom.updateIsRanged(((CheckBox) findViewById(R.id.edit_checkBox_frange)).isChecked());
+        thisRoom.updateRange(Double.parseDouble(((EditText) findViewById(R.id.edit_editText_frange)).getText().toString()));
+
+        updateLatLon();
+
+        setComponentsByRoom(thisRoom);
+
+        //TODO: Update server with new information
+
+
+        // Can include once it actually updates
+        /*
+        ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setMessage("Updating Frequency Settings...");
+        dialog.setIndeterminate(true);
+        dialog.show();
+        */
     }
 }
