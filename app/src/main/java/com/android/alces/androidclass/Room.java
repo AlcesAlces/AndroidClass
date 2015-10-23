@@ -21,9 +21,9 @@ public class Room {
     {
         try {
             roomId = inputJson.get("_id").toString();
-            creator = inputJson.get("_creator").toString();
-            name = inputJson.get("_room").toString();
-            isPrivate = (Integer.parseInt((inputJson.get("_isPrivate").toString()))
+            creator = inputJson.get("creator").toString();
+            name = inputJson.get("room").toString();
+            isPrivate = (Integer.parseInt((inputJson.get("isPrivate").toString()))
                          == 0 ? false : true);
             rangeInfo = new RangeInfo(inputJson);
         }
