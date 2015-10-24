@@ -28,6 +28,7 @@ public class RoomEditActivity extends Activity {
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
      *at https://github.com/nkzawa/socket.io-android-chat this integrates the chat aswell.
     */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,44 +50,17 @@ public class RoomEditActivity extends Activity {
             finish();
         }
 
-        Button btnResetOrigin = (Button) findViewById(R.id.edit_button_reset);
+        // Button Listeners
 
+        Button btnResetOrigin = (Button) findViewById(R.id.edit_button_reset);
         btnResetOrigin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(RoomEditActivity.this);
-                builder.setMessage("Reset the origin of the frequency to your current location?")
-                        .setCancelable(false)
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-
-                                try {
-                                    LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                                    Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                                    double longitude = location.getLongitude();
-                                    double latitude = location.getLatitude();
-                                    thisRoom.updateRangeLatLon(latitude, longitude);
-                                    updateLatLon();
-                                }
-                                catch(SecurityException ex)
-                                {
-
-                                }
-                            }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                return;
-                            }
-                        });
-                AlertDialog alert = builder.create();
-
-                alert.show();
+                updateLatLng();
             }
         });
 
         Button btnUpdate = (Button) findViewById(R.id.edit_button_update);
-
         btnUpdate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,7 +68,13 @@ public class RoomEditActivity extends Activity {
             }
         });
 
-        updateLatLon();
+        Button btnDisband = (Button) findViewById(R.id.edit_button_disband);
+        btnDisband.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                disbandFrequency();
+            }
+        });
     }
 
     @Override
@@ -147,6 +127,7 @@ public class RoomEditActivity extends Activity {
         Button btnDisband = (Button) findViewById(R.id.edit_button_disband);
         Button btnUpdate = (Button) findViewById(R.id.edit_button_update);
 
+        //Range Sets
         cbRange.setChecked(toSet.rangeInfo.isRanged);
         etRange.setText(Double.toString(toSet.rangeInfo.range));
 
@@ -155,12 +136,67 @@ public class RoomEditActivity extends Activity {
 
         //Text box settings
         etName.setText(toSet.name);
+        tvOrigin.setText(toSet.rangeInfo.toString());
     }
 
-    public void updateLatLon()
+    public void disbandFrequency()
     {
-        TextView tvOrigin = (TextView) findViewById(R.id.edit_tv_originValue);
-        tvOrigin.setText(thisRoom.rangeInfo.toString());
+        AlertDialog.Builder builder = new AlertDialog.Builder(RoomEditActivity.this);
+        builder.setMessage("Remove this frequency? This cannot be undone.")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        //TODO: Delete the room
+
+                        ProgressDialog dialog_2 = new ProgressDialog(getParent());
+                        dialog_2.setMessage("Disbanding Frequency...");
+                        dialog_2.setIndeterminate(true);
+                        dialog_2.show();
+
+                        return;
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        return;
+                    }
+                });
+        AlertDialog alert = builder.create();
+
+        alert.show();
+    }
+
+    public void updateLatLng()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(RoomEditActivity.this);
+        builder.setMessage("Reset the origin of the frequency to your current location?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        try {
+                            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                            double longitude = location.getLongitude();
+                            double latitude = location.getLatitude();
+                            thisRoom.updateRangeLatLon(latitude, longitude);
+                            setComponentsByRoom(thisRoom);
+                        }
+                        catch(SecurityException ex)
+                        {
+
+                        }
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        return;
+                    }
+                });
+        AlertDialog alert = builder.create();
+
+        alert.show();
     }
 
     public void updateFrequency()
@@ -170,19 +206,13 @@ public class RoomEditActivity extends Activity {
         thisRoom.updateIsRanged(((CheckBox) findViewById(R.id.edit_checkBox_frange)).isChecked());
         thisRoom.updateRange(Double.parseDouble(((EditText) findViewById(R.id.edit_editText_frange)).getText().toString()));
 
-        updateLatLon();
-
         setComponentsByRoom(thisRoom);
 
         //TODO: Update server with new information
 
-
-        // Can include once it actually updates
-        /*
         ProgressDialog dialog = new ProgressDialog(this);
         dialog.setMessage("Updating Frequency Settings...");
         dialog.setIndeterminate(true);
         dialog.show();
-        */
     }
 }
