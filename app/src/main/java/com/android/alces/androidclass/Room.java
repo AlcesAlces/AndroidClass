@@ -1,5 +1,12 @@
 package com.android.alces.androidclass;
 
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationManager;
+
+import com.google.gson.JsonObject;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,6 +70,27 @@ public class Room {
     public void updateRange (double newRange)
     {
         rangeInfo.range = newRange;
+    }
+
+    public JSONObject toJson()
+    {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("_id", roomId);
+            json.put("creator", creator);
+            json.put("room", name);
+            json.put("isPrivate", isPrivate ? 1 : 0);
+            json.put("range", rangeInfo.range);
+            json.put("originLat", rangeInfo.lat);
+            json.put("originLon", rangeInfo.lon);
+
+        }
+        catch(JSONException ex)
+        {
+
+        }
+
+        return json;
     }
 
 }

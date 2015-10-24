@@ -210,7 +210,6 @@ public class CreateRoomActivity extends Activity {
                         .setCancelable(false)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                //TODO: Reload the RoomsActivity listview so it displays the new thing
                                 Intent intent = new Intent();
                                 intent.putExtra("payload", "something");
                                 setResult(RESULT_OK, intent);

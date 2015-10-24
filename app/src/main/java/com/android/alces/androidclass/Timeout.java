@@ -4,9 +4,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-/**
- * Created by Echdah on 9/29/2015.
- */
 public class Timeout implements Runnable{
 
     int timeoutTime = 10000;

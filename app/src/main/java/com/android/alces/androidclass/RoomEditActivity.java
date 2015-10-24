@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,7 +18,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.github.nkzawa.emitter.Emitter;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -25,9 +29,8 @@ import org.json.JSONObject;
 public class RoomEditActivity extends Activity {
     Room thisRoom = null;
     private com.github.nkzawa.socketio.client.Socket mSocket = Global.globalSocket;
-    /*TODO: Figure out how to design this. There's a good tutorial on how this could look
-     *at https://github.com/nkzawa/socket.io-android-chat this integrates the chat aswell.
-    */
+    Boolean cycle = false;
+    ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,12 +78,22 @@ public class RoomEditActivity extends Activity {
                 disbandFrequency();
             }
         });
+
+        mSocket.on("success_update_room", onUpdateSuccess);
+        mSocket.on("refuse_update_room", onEditActivityFailure);
+        mSocket.on("refuse_delete_room", onEditActivityFailure);
+        mSocket.on("success_delete_room", onDeleteSuccess);
     }
 
     @Override
     protected void onDestroy()
     {
         super.onDestroy();
+        //Remove listeners.
+        mSocket.off("success_update_room", onUpdateSuccess);
+        mSocket.off("refuse_update_room", onEditActivityFailure);
+        mSocket.off("refuse_delete_room", onEditActivityFailure);
+        mSocket.off("success_delete_room", onDeleteSuccess);
     }
 
     @Override
@@ -139,7 +152,7 @@ public class RoomEditActivity extends Activity {
         tvOrigin.setText(toSet.rangeInfo.toString());
     }
 
-    public void disbandFrequency()
+    private void disbandFrequency()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(RoomEditActivity.this);
         builder.setMessage("Remove this frequency? This cannot be undone.")
@@ -147,7 +160,7 @@ public class RoomEditActivity extends Activity {
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
-                        //TODO: Delete the room
+                        doDisband();
 
                         return;
                     }
@@ -162,7 +175,19 @@ public class RoomEditActivity extends Activity {
         alert.show();
     }
 
-    public void updateLatLng()
+    private void doDisband()
+    {
+        dialog = new ProgressDialog(RoomEditActivity.this);
+        dialog.setMessage("Logging in. Please wait....");
+        dialog.setIndeterminate(true);
+        dialog.show();
+        mSocket.emit("delete_room", thisRoom.toJson());
+        //Use timeout class and handler to stop this from going forever.
+        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+        thread.start();
+    }
+
+    private void updateLatLng()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(RoomEditActivity.this);
         builder.setMessage("Reset the origin of the frequency to your current location?")
@@ -203,11 +228,130 @@ public class RoomEditActivity extends Activity {
 
         setComponentsByRoom(thisRoom);
 
-        //TODO: Update server with new information
+        doUpdate();
+    }
 
-        ProgressDialog dialog = new ProgressDialog(this);
-        dialog.setMessage("Updating Frequency Settings...");
+    private void doUpdate()
+    {
+        dialog = new ProgressDialog(RoomEditActivity.this);
+        dialog.setMessage("Updating room. Please wait....");
         dialog.setIndeterminate(true);
         dialog.show();
+        //TODO: Build/Emit data.
+
+
+        mSocket.emit("update_room", thisRoom.toJson());
+        //Use timeout class and handler to stop this from going forever.
+        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+        thread.start();
     }
+
+    //Use to signify update success.
+    private Emitter.Listener onUpdateSuccess = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+
+            String message = (String) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+            Message msg = handler.obtainMessage();
+            msg.what = 0;
+            msg.obj = message;
+            handler.sendMessage(msg);
+        }
+    };
+
+    private Emitter.Listener onDeleteSuccess = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+
+            String message = (String) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+            //SO! Basically at this point we need to set up a messenger to
+            //communicate with the main thread. I suggest looking at:
+            //https://github.com/nkzawa/socket.io-android-chat/blob/master/app/src/main/java/com/github/nkzawa/socketio/androidchat/MainFragment.java
+            Message msg = handler.obtainMessage();
+            msg.what = 1;
+            msg.obj = message;
+            handler.sendMessage(msg);
+        }
+    };
+
+    private Emitter.Listener onEditActivityFailure = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+
+            String message = (String) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+            //SO! Basically at this point we need to set up a messenger to
+            //communicate with the main thread. I suggest looking at:
+            //https://github.com/nkzawa/socket.io-android-chat/blob/master/app/src/main/java/com/github/nkzawa/socketio/androidchat/MainFragment.java
+            Message msg = handler.obtainMessage();
+            msg.what = 2;
+            msg.obj = message;
+            handler.sendMessage(msg);
+        }
+    };
+
+    //Basically this is the ONLY place where we can interact with the UI thread once we've spun off.
+    Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+
+            try {
+                dialog.dismiss();
+            } catch (Exception ex) {
+
+            }
+            if (msg.what == 0) {
+                //Update Success
+                cycle = true;
+                Toast.makeText(RoomEditActivity.this,"Successfully updated room!",Toast.LENGTH_LONG).show();
+                Intent intent = new Intent();
+                intent.putExtra("payload", "something");
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+            else if(msg.what == 1)
+            {
+                //Delete Success
+                Toast.makeText(RoomEditActivity.this,"Successfully deleted room!",Toast.LENGTH_LONG).show();
+                cycle = true;
+                Intent intent = new Intent();
+                intent.putExtra("payload", "something");
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+            else if(msg.what == 2)
+            {
+                cycle = true;
+                //Whatever failure message the server sent.
+                Toast.makeText(RoomEditActivity.this,(String)msg.obj,Toast.LENGTH_LONG).show();
+            }
+            else if (msg.what == 3) {
+                if (!cycle) {
+                    Toast.makeText(RoomEditActivity.this,"Connection timed out!",Toast.LENGTH_LONG).show();
+                    //TODO: Mike: Investigate why the connection isn't working.
+                }
+            }
+            return true;
+        }
+    });
 }
