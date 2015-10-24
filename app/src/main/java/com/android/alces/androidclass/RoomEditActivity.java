@@ -149,11 +149,6 @@ public class RoomEditActivity extends Activity {
 
                         //TODO: Delete the room
 
-                        ProgressDialog dialog_2 = new ProgressDialog(getParent());
-                        dialog_2.setMessage("Disbanding Frequency...");
-                        dialog_2.setIndeterminate(true);
-                        dialog_2.show();
-
                         return;
                     }
                 })
