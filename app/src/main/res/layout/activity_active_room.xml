@@ -55,13 +55,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="0.63">
+        android:layout_weight="0.63"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/active_editText_message"
-            android:hint="Send Message" />
+            android:hint="Send Message"
+            />
     </LinearLayout>
 
 </LinearLayout>

@@ -69,7 +69,6 @@ public class MainActivity extends Activity {
         editTextPass = (EditText) findViewById(R.id.editText2);
 
         tvMessages = (TextView) findViewById(R.id.tvLoginMessages);
-
         mSocket.connect();
 
         //TODO: Handle a non-connection situation.

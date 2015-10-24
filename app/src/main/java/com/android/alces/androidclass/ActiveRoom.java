@@ -1,7 +1,10 @@
 package com.android.alces.androidclass;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -51,7 +54,7 @@ public class ActiveRoom extends Activity {
             public void onClick(View v) {
                 Intent activity = new Intent(ActiveRoom.this, RoomEditActivity.class);
                 activity.putExtra("payload", new Gson().toJson(thisRoom));
-                startActivity(activity);
+                startActivityForResult(activity, 1);
             }
         });
 
@@ -76,6 +79,21 @@ public class ActiveRoom extends Activity {
         Intent intent = new Intent();
         intent.putExtra("payload", "this is pointless kek");
         setResult(RESULT_OK, intent);
+        finish();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent)
+    {
+        if(requestCode == 1)
+        {
+            if(resultCode == RESULT_OK) {
+                Intent intent2 = new Intent();
+                intent2.putExtra("payload", "something");
+                setResult(RESULT_OK, intent2);
+                finish();
+            }
+        }
     }
 
     @Override
