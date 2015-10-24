@@ -89,9 +89,9 @@ public class RoomEditActivity extends Activity {
                     thisRoom.updateIsRanged(false);
                     setComponentsByRoom(thisRoom);
                 }
-                if (cbRange.isChecked() && thisRoom.rangeInfo.range == -1)
+                if (cbRange.isChecked() && thisRoom.rangeInfo.range <= 0)
                 {
-                    thisRoom.updateRange(0);
+                    thisRoom.updateRange(1);
                     thisRoom.updateIsRanged(true);
                     setComponentsByRoom(thisRoom);
                 }
@@ -249,7 +249,7 @@ public class RoomEditActivity extends Activity {
         {
             if (thisRoom.rangeInfo.isRanged)
             {
-                thisRoom.updateRange(0);
+                thisRoom.updateRange(1);
             }
             else
             {
@@ -260,7 +260,14 @@ public class RoomEditActivity extends Activity {
         {
             if (thisRoom.rangeInfo.isRanged)
             {
-                thisRoom.updateRange(Double.parseDouble(((EditText) findViewById(R.id.edit_editText_frange)).getText().toString()));
+                if (Double.parseDouble(((EditText) findViewById(R.id.edit_editText_frange)).getText().toString()) <= 0)
+                {
+                    thisRoom.updateRange(1);
+                }
+                else
+                {
+                    thisRoom.updateRange(Double.parseDouble(((EditText) findViewById(R.id.edit_editText_frange)).getText().toString()));
+                }
             }
             else
             {
