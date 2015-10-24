@@ -79,6 +79,25 @@ public class RoomEditActivity extends Activity {
             }
         });
 
+        final CheckBox cbRange = (CheckBox) findViewById(R.id.edit_checkBox_frange);
+        cbRange.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!cbRange.isChecked())
+                {
+                    thisRoom.updateRange(-1);
+                    thisRoom.updateIsRanged(false);
+                    setComponentsByRoom(thisRoom);
+                }
+                if (cbRange.isChecked() && thisRoom.rangeInfo.range == -1)
+                {
+                    thisRoom.updateRange(0);
+                    thisRoom.updateIsRanged(true);
+                    setComponentsByRoom(thisRoom);
+                }
+            }
+        });
+
         mSocket.on("success_update_room", onUpdateSuccess);
         mSocket.on("refuse_update_room", onEditActivityFailure);
         mSocket.on("refuse_delete_room", onEditActivityFailure);
@@ -178,7 +197,7 @@ public class RoomEditActivity extends Activity {
     private void doDisband()
     {
         dialog = new ProgressDialog(RoomEditActivity.this);
-        dialog.setMessage("Logging in. Please wait....");
+        dialog.setMessage("Disbanding frequency. Please wait....");
         dialog.setIndeterminate(true);
         dialog.show();
         mSocket.emit("delete_room", thisRoom.toJson());
@@ -224,7 +243,30 @@ public class RoomEditActivity extends Activity {
         thisRoom.updateRoomName(((EditText) findViewById(R.id.edit_editText_fname)).getText().toString());
         thisRoom.updateIsPrivate(((CheckBox) findViewById(R.id.edit_checkBox_fprivate)).isChecked());
         thisRoom.updateIsRanged(((CheckBox) findViewById(R.id.edit_checkBox_frange)).isChecked());
-        thisRoom.updateRange(Double.parseDouble(((EditText) findViewById(R.id.edit_editText_frange)).getText().toString()));
+
+        //TODO: Better blank range handle?
+        if (((EditText) findViewById(R.id.edit_editText_frange)).getText().toString().trim().isEmpty())
+        {
+            if (thisRoom.rangeInfo.isRanged)
+            {
+                thisRoom.updateRange(0);
+            }
+            else
+            {
+                thisRoom.updateRange(-1);
+            }
+        }
+        else
+        {
+            if (thisRoom.rangeInfo.isRanged)
+            {
+                thisRoom.updateRange(Double.parseDouble(((EditText) findViewById(R.id.edit_editText_frange)).getText().toString()));
+            }
+            else
+            {
+                thisRoom.updateRange(-1);
+            }
+        }
 
         setComponentsByRoom(thisRoom);
 
@@ -234,7 +276,7 @@ public class RoomEditActivity extends Activity {
     private void doUpdate()
     {
         dialog = new ProgressDialog(RoomEditActivity.this);
-        dialog.setMessage("Updating room. Please wait....");
+        dialog.setMessage("Updating frequency. Please wait....");
         dialog.setIndeterminate(true);
         dialog.show();
         //TODO: Build/Emit data.
@@ -323,7 +365,7 @@ public class RoomEditActivity extends Activity {
             if (msg.what == 0) {
                 //Update Success
                 cycle = true;
-                Toast.makeText(RoomEditActivity.this,"Successfully updated room!",Toast.LENGTH_LONG).show();
+                Toast.makeText(RoomEditActivity.this,"Successfully updated frequency!",Toast.LENGTH_LONG).show();
                 Intent intent = new Intent();
                 intent.putExtra("payload", "something");
                 setResult(RESULT_OK, intent);
@@ -332,7 +374,7 @@ public class RoomEditActivity extends Activity {
             else if(msg.what == 1)
             {
                 //Delete Success
-                Toast.makeText(RoomEditActivity.this,"Successfully deleted room!",Toast.LENGTH_LONG).show();
+                Toast.makeText(RoomEditActivity.this,"Successfully deleted frequency!",Toast.LENGTH_LONG).show();
                 cycle = true;
                 Intent intent = new Intent();
                 intent.putExtra("payload", "something");
