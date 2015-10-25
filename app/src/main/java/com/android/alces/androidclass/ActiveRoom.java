@@ -12,7 +12,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.engineio.client.Socket;
 import com.google.gson.Gson;
 
@@ -23,6 +25,8 @@ public class ActiveRoom extends Activity {
 
     Room thisRoom = null;
     private com.github.nkzawa.socketio.client.Socket mSocket = Global.globalSocket;
+    ProgressDialog dialog;
+    Boolean done = false;
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
      *at https://github.com/nkzawa/socket.io-android-chat this integrates the chat aswell.
     */
@@ -30,6 +34,8 @@ public class ActiveRoom extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_active_room);
+
+        Global._currentHandler = handler;
 
         Bundle extras = getIntent().getExtras();
         //The bundle is a serialized json object with the Gson code.
@@ -48,6 +54,8 @@ public class ActiveRoom extends Activity {
         }
 
         Button settingsButton = (Button) findViewById(R.id.active_button_edit);
+
+        settingsButton.setVisibility(Global._user.roomOwner ? View.VISIBLE : View.INVISIBLE);
 
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,6 +82,7 @@ public class ActiveRoom extends Activity {
             //TODO: handle error
         }
 
+        Global._user.resetRoom();
         mSocket.emit("leave_room", json);
 
         Intent intent = new Intent();
@@ -117,4 +126,61 @@ public class ActiveRoom extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+
+            try {
+                dialog.dismiss();
+            } catch (Exception ex) {
+
+            }
+            if(msg.what == 0)
+            {
+
+            }
+            //Reauth needed
+            else if(msg.what == 254)
+            {
+                Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+                thread.start();
+                //TODO: Fix this variable.
+                //done = false;
+
+                dialog = new ProgressDialog(ActiveRoom.this);
+                dialog.setMessage("You lost connection. Reconnecting...");
+                dialog.setIndeterminate(true);
+                dialog.show();
+
+                mSocket.emit("reauth", Global._user.toJson());
+                mSocket.once("reauth_success", reauthRecover);
+            }
+            //Reauth recovery
+            else if(msg.what == 253)
+            {
+                Toast.makeText(ActiveRoom.this, "Reauthed successfully.", Toast.LENGTH_LONG).show();
+            }
+
+            return true;
+        }
+    });
+
+    private Emitter.Listener reauthRecover = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+//            JSONObject data = (JSONObject) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+
+            Message msg = handler.obtainMessage();
+            msg.what = 253;
+            handler.sendMessage(msg);
+        }
+    };
 }

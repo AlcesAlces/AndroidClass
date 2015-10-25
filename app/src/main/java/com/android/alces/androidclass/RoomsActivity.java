@@ -36,24 +36,20 @@ public class RoomsActivity extends Activity {
     private ArrayAdapter<Room> adapter;
     ProgressDialog dialog;
     private Room attempt = null;
+    boolean done = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rooms);
 
-        lv = (ListView) findViewById(R.id.roomsListView);
+        Global._currentHandler = handler;
 
-        //TODO: Check for non-connected socket.
-        mSocket.on("server error", serverError);
+        lv = (ListView) findViewById(R.id.roomsListView);
 
         getAllRooms();
 
         mSocket.on("all rooms", displayAllRooms);
-        mSocket.on("reauth", reAuth);
-        //TODO: Watch for timeout
-
-
         Button createButton = (Button) findViewById(R.id.btnCreateRooms);
 
         createButton.setOnClickListener(new View.OnClickListener() {
@@ -119,15 +115,19 @@ public class RoomsActivity extends Activity {
 
     private void getAllRooms()
     {
+        done = false;
         dialog = new ProgressDialog(this);
         dialog.setMessage("Retrieving frequency information");
         dialog.setIndeterminate(true);
         dialog.show();
         mSocket.emit("get all rooms", "nothing");
+        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+        thread.start();
     }
 
     private void tryJoin(int position)
     {
+        done = false;
         Room lvi = (Room)lv.getItemAtPosition(position);
         attempt = lvi;
         JSONObject json = new JSONObject();
@@ -215,18 +215,16 @@ public class RoomsActivity extends Activity {
     private Emitter.Listener joinSuccess = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-//            JSONObject data = (JSONObject) args[0];
-//
-//            int numUsers;
-//            try {
-//                numUsers = data.getInt("numUsers");
-//            } catch (JSONException e) {
-//                return;
-//            }
-            //SO! Basically at this point we need to set up a messenger to
-            //communicate with the main thread. I suggest looking at:
-            //https://github.com/nkzawa/socket.io-android-chat/blob/master/app/src/main/java/com/github/nkzawa/socketio/androidchat/MainFragment.java
+             JSONObject data = (JSONObject) args[0];
+
+            boolean owner = false;
+            try {
+                owner  = data.getBoolean("perms");
+            } catch (JSONException e) {
+                return;
+            }
             Message msg = handler.obtainMessage();
+            msg.obj = owner;
             msg.what = 2;
             handler.sendMessage(msg);
         }
@@ -246,6 +244,7 @@ public class RoomsActivity extends Activity {
             }
 
             if (msg.what == 0) {
+                done = true;
                 JSONArray tempJson = (JSONArray) msg.obj;
                 ArrayList<Room> listItems = new ArrayList<>();
 
@@ -268,6 +267,7 @@ public class RoomsActivity extends Activity {
             }
             //Reauth message
             else if (msg.what == 1) {
+                done = true;
                 AlertDialog.Builder builder = new AlertDialog.Builder(RoomsActivity.this);
                 builder.setMessage((String) msg.obj)
                         .setCancelable(false)
@@ -283,19 +283,64 @@ public class RoomsActivity extends Activity {
             }
             else if (msg.what == 2)
             {
+                done = true;
                 if(attempt != null)
                 {
+                    Global._user.roomId = attempt.roomId;
+                    Global._user.roomOwner = (Boolean)msg.obj;
                     Intent activity = new Intent(RoomsActivity.this, ActiveRoom.class);
-                 //   Intent activity = new Intent(MyActivity.this,NextActivity.class);
                     activity.putExtra("payload", new Gson().toJson(attempt));
                     startActivityForResult(activity, 1);
                 }
             }
             else if(msg.what == 3)
             {
-                //TODO: Add timeout to this section
+                if(!done)
+                {
+                    //TODO: Add timeout to this section
+                }
+            }
+            //Reauth needed
+            else if(msg.what == 254)
+            {
+                done = true;
+                Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+                thread.start();
+                //TODO: Fix this variable.
+                //done = false;
+
+                dialog = new ProgressDialog(RoomsActivity.this);
+                dialog.setMessage("You lost connection. Reconnecting...");
+                dialog.setIndeterminate(true);
+                dialog.show();
+
+                mSocket.emit("reauth", Global._user.toJson());
+                mSocket.once("reauth_success", reauthRecover);
+            }
+            //Reauth recovery
+            else if(msg.what == 253)
+            {
+                Toast.makeText(RoomsActivity.this, "Reauthed successfully.", Toast.LENGTH_LONG).show();
             }
             return true;
         }
     });
+
+    private Emitter.Listener reauthRecover = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+//            JSONObject data = (JSONObject) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+
+            Message msg = handler.obtainMessage();
+            msg.what = 253;
+            handler.sendMessage(msg);
+        }
+    };
 }

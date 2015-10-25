@@ -76,6 +76,7 @@ public class MainActivity extends Activity {
 
         mSocket.on("refuse", onRefuse);
         mSocket.on("approve", onApprove);
+        mSocket.on("reauth", onReauth);
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
 
@@ -210,6 +211,24 @@ public class MainActivity extends Activity {
         }
     };
 
+    private Emitter.Listener onReauth = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+//            JSONObject data = (JSONObject) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+
+            Message msg = handler.obtainMessage();
+            msg.what = 254;
+            handler.sendMessage(msg);
+        }
+    };
+
     private Emitter.Listener onApprove = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
@@ -261,6 +280,20 @@ public class MainActivity extends Activity {
                 if(!authCycle) {
                     tvMessages.setText("Connection timed out from the server");
                 }
+            }
+            else if(msg.what == 254)
+            {
+                //Reauth message.
+                //TODO: Ensure that this logic is executing correctly.
+                if(Global._currentHandler != null)
+                {
+                    //TODO: Make new message
+                    Message toSend = Global._currentHandler.obtainMessage();
+                    toSend.what = 254;
+                    Global._currentHandler.sendMessage(toSend);
+                }
+                //TODO: Do reauth emit.
+                //Toast.makeText(MainActivity.this,(String)msg.obj,Toast.LENGTH_LONG).show();
             }
             setComponentsEnabled(true);
             return true;

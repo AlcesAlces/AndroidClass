@@ -37,6 +37,8 @@ public class RoomEditActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_room);
 
+        Global._currentHandler = handler;
+
         Bundle extras = getIntent().getExtras();
         //The bundle is a serialized json object with the Gson code.
         if(extras != null)
@@ -154,6 +156,7 @@ public class RoomEditActivity extends Activity {
 
     private void disbandFrequency()
     {
+        cycle = false;
         AlertDialog.Builder builder = new AlertDialog.Builder(RoomEditActivity.this);
         builder.setMessage("Remove this frequency? This cannot be undone.")
                 .setCancelable(false)
@@ -177,6 +180,7 @@ public class RoomEditActivity extends Activity {
 
     private void doDisband()
     {
+        cycle = false;
         dialog = new ProgressDialog(RoomEditActivity.this);
         dialog.setMessage("Logging in. Please wait....");
         dialog.setIndeterminate(true);
@@ -189,6 +193,7 @@ public class RoomEditActivity extends Activity {
 
     private void updateLatLng()
     {
+        cycle = false;
         AlertDialog.Builder builder = new AlertDialog.Builder(RoomEditActivity.this);
         builder.setMessage("Reset the origin of the frequency to your current location?")
                 .setCancelable(false)
@@ -221,6 +226,7 @@ public class RoomEditActivity extends Activity {
 
     public void updateFrequency()
     {
+        cycle = false;
         thisRoom.updateRoomName(((EditText) findViewById(R.id.edit_editText_fname)).getText().toString());
         thisRoom.updateIsPrivate(((CheckBox) findViewById(R.id.edit_checkBox_fprivate)).isChecked());
         thisRoom.updateIsRanged(((CheckBox) findViewById(R.id.edit_checkBox_frange)).isChecked());
@@ -351,7 +357,47 @@ public class RoomEditActivity extends Activity {
                     //TODO: Mike: Investigate why the connection isn't working.
                 }
             }
+            //Reauth needed
+            else if(msg.what == 254)
+            {
+                cycle = true;
+                Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+                thread.start();
+                //TODO: Fix this variable.
+                //done = false;
+
+                dialog = new ProgressDialog(RoomEditActivity.this);
+                dialog.setMessage("You lost connection. Reconnecting...");
+                dialog.setIndeterminate(true);
+                dialog.show();
+
+                mSocket.emit("reauth", Global._user.toJson());
+                mSocket.once("reauth_success", reauthRecover);
+            }
+            //Reauth recovery
+            else if(msg.what == 253)
+            {
+                Toast.makeText(RoomEditActivity.this, "Reauthed successfully.", Toast.LENGTH_LONG).show();
+            }
             return true;
         }
     });
+
+    private Emitter.Listener reauthRecover = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+//            JSONObject data = (JSONObject) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+
+            Message msg = handler.obtainMessage();
+            msg.what = 253;
+            handler.sendMessage(msg);
+        }
+    };
 }
