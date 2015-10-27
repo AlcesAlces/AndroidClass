@@ -160,18 +160,28 @@ public class MainActivity extends Activity {
             dialog.setIndeterminate(true);
             dialog.show();
 
+            json.put("name", editTextUser.getText().toString());
+            json.put("pass", editTextPass.getText().toString());
+
             //TODO: Need to check for more cases here.
             LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
             Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            double longitude = location.getLongitude();
-            double latitude = location.getLatitude();
-
-            json.put("name", editTextUser.getText().toString());
-            json.put("pass", editTextPass.getText().toString());
-            json.put("lat", latitude);
-            json.put("lon", longitude);
-
-            Global._user = new User(editTextUser.getText().toString(), latitude, longitude);
+            try {
+                double longitude = location.getLongitude();
+                double latitude = location.getLatitude();
+                json.put("lat", latitude);
+                json.put("lon", longitude);
+                Global._user = new User(editTextUser.getText().toString(), latitude, longitude);
+            }
+            catch(NullPointerException nptr)
+            {
+                //Default location.
+                double lat = 0.0;
+                double lon = 0.0;
+                json.put("lat", lat);
+                json.put("lon", lon);
+                Global._user = new User(editTextUser.getText().toString(), lat, lon);
+            }
         }
         catch(JSONException ex)
         {

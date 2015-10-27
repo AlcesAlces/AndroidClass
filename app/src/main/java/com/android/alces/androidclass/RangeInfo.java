@@ -24,8 +24,18 @@ public class RangeInfo {
     public RangeInfo(JSONObject json)
     {
         try {
-            lat = (double)json.get("originLat");
-            lon = (double)json.get("originLon");
+            try {
+                lat = (double) json.get("originLat");
+                lon = (double) json.get("originLon");
+            }
+            catch(ClassCastException ex)
+            {
+                lat = 0.0;
+                lon = 0.0;
+            }
+
+
+
             range = (int)json.get("range");
             isRanged = (range != -1);
 
