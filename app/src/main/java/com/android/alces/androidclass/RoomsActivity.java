@@ -36,7 +36,7 @@ public class RoomsActivity extends Activity {
     private ArrayAdapter<Room> adapter;
     ProgressDialog dialog;
     private Room attempt = null;
-    boolean done = false;
+    Timeout timerThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,19 +115,19 @@ public class RoomsActivity extends Activity {
 
     private void getAllRooms()
     {
-        done = false;
         dialog = new ProgressDialog(this);
         dialog.setMessage("Retrieving frequency information");
         dialog.setIndeterminate(true);
         dialog.show();
         mSocket.emit("get all rooms", "nothing");
-        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
-        thread.start();
+//        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+//        thread.start();
+        timerThread = new Timeout(handler);
+        timerThread.start();
     }
 
     private void tryJoin(int position)
     {
-        done = false;
         Room lvi = (Room)lv.getItemAtPosition(position);
         attempt = lvi;
         JSONObject json = new JSONObject();
@@ -237,6 +237,7 @@ public class RoomsActivity extends Activity {
 
             try {
                 dialog.dismiss();
+                timerThread.interrupt();
             }
             catch(Exception ex)
             {
@@ -244,7 +245,6 @@ public class RoomsActivity extends Activity {
             }
 
             if (msg.what == 0) {
-                done = true;
                 JSONArray tempJson = (JSONArray) msg.obj;
                 ArrayList<Room> listItems = new ArrayList<>();
 
@@ -267,7 +267,6 @@ public class RoomsActivity extends Activity {
             }
             //Reauth message
             else if (msg.what == 1) {
-                done = true;
                 AlertDialog.Builder builder = new AlertDialog.Builder(RoomsActivity.this);
                 builder.setMessage((String) msg.obj)
                         .setCancelable(false)
@@ -283,7 +282,6 @@ public class RoomsActivity extends Activity {
             }
             else if (msg.what == 2)
             {
-                done = true;
                 if(attempt != null)
                 {
                     Global._user.roomId = attempt.roomId;
@@ -295,17 +293,16 @@ public class RoomsActivity extends Activity {
             }
             else if(msg.what == 3)
             {
-                if(!done)
-                {
-                    Toast.makeText(RoomsActivity.this, "Connection timed out!", Toast.LENGTH_LONG);
-                }
+                Toast.makeText(RoomsActivity.this, "Connection timed out!", Toast.LENGTH_LONG);
             }
             //Reauth needed
             else if(msg.what == 254)
             {
-                done = true;
-                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
-                thread.start();
+//                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+//                thread.start();
+                timerThread = new Timeout(handler);
+                timerThread.start();
+
                 //TODO: Fix this variable.
                 //done = false;
 

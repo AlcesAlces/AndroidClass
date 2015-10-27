@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-public class Timeout implements Runnable{
+public class Timeout extends Thread implements Runnable{
 
     int timeoutTime = 10000;
     Handler handler;
@@ -20,7 +20,7 @@ public class Timeout implements Runnable{
 
         long startTime = System.currentTimeMillis();
 
-        while(!outOfTime)
+        while(!outOfTime && !this.isInterrupted())
         {
             long currentTime = System.currentTimeMillis();
 
@@ -30,9 +30,11 @@ public class Timeout implements Runnable{
             }
         }
 
-        Message msg = handler.obtainMessage();
-        msg.what = 3;
+        if(!this.isInterrupted()) {
 
-        handler.sendMessage(msg);
+            Message msg = handler.obtainMessage();
+            msg.what = 3;
+            handler.sendMessage(msg);
+        }
     }
 }

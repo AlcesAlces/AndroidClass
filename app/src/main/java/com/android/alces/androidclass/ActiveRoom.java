@@ -26,7 +26,8 @@ public class ActiveRoom extends Activity {
     Room thisRoom = null;
     private com.github.nkzawa.socketio.client.Socket mSocket = Global.globalSocket;
     ProgressDialog dialog;
-    Boolean done = false;
+    Timeout timerThread;
+
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
      *at https://github.com/nkzawa/socket.io-android-chat this integrates the chat aswell.
     */
@@ -133,6 +134,7 @@ public class ActiveRoom extends Activity {
 
             try {
                 dialog.dismiss();
+                timerThread.interrupt();
             } catch (Exception ex) {
 
             }
@@ -143,8 +145,10 @@ public class ActiveRoom extends Activity {
             //Reauth needed
             else if(msg.what == 254)
             {
-                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
-                thread.start();
+//                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+//                thread.start();
+                timerThread = new Timeout(handler);
+                timerThread.start();
                 //TODO: Fix this variable.
                 //done = false;
 

@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
     Button btnRegister;
     ProgressDialog dialog;
 
-    boolean authCycle = false;
+    Timeout timerThread;
 
     private Socket mSocket;
     {
@@ -195,8 +195,12 @@ public class MainActivity extends Activity {
         mSocket.emit("authenticate", json);
 
         //Create a timeout thread which will sit in the background and verify that everything is Kosher.
-        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
-        thread.start();
+
+        timerThread = new Timeout(handler);
+        timerThread.start();
+
+        //Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+        //thread.start();
     }
 
     private Emitter.Listener onRefuse = new Emitter.Listener() {
@@ -264,6 +268,7 @@ public class MainActivity extends Activity {
 
             try {
                 dialog.dismiss();
+                timerThread.interrupt();
             }
             catch(Exception ex)
             {
@@ -271,25 +276,24 @@ public class MainActivity extends Activity {
             }
 
             if(msg.what==0){
-                authCycle = true;
                 tvMessages.setText((String)msg.obj);
             }
             else if(msg.what == 1)
             {
-                authCycle = true;
                 success();
             }
             else if(msg.what == 2)
             {
-                authCycle = true;
                 creationSuccess();
             }
             else if(msg.what == 3)
             {
                 //timeout. authCycle prevents us from stepping on the toes of authentication
-                if(!authCycle) {
-                    tvMessages.setText("Connection timed out from the server");
-                }
+//                if(!authCycle) {
+//                    tvMessages.setText("Connection timed out from the server");
+//                }
+
+                Toast.makeText(MainActivity.this, "Timed out from the server!", Toast.LENGTH_LONG).show();
             }
             else if(msg.what == 254)
             {
@@ -297,12 +301,10 @@ public class MainActivity extends Activity {
                 //TODO: Ensure that this logic is executing correctly.
                 if(Global._currentHandler != null)
                 {
-                    //TODO: Make new message
                     Message toSend = Global._currentHandler.obtainMessage();
                     toSend.what = 254;
                     Global._currentHandler.sendMessage(toSend);
                 }
-                //TODO: Do reauth emit.
                 //Toast.makeText(MainActivity.this,(String)msg.obj,Toast.LENGTH_LONG).show();
             }
             setComponentsEnabled(true);

@@ -29,8 +29,8 @@ import org.json.JSONObject;
 public class RoomEditActivity extends Activity {
     Room thisRoom = null;
     private com.github.nkzawa.socketio.client.Socket mSocket = Global.globalSocket;
-    Boolean cycle = false;
     ProgressDialog dialog;
+    Timeout timerThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,7 +175,6 @@ public class RoomEditActivity extends Activity {
 
     private void disbandFrequency()
     {
-        cycle = false;
         AlertDialog.Builder builder = new AlertDialog.Builder(RoomEditActivity.this);
         builder.setMessage("Remove this frequency? This cannot be undone.")
                 .setCancelable(false)
@@ -199,20 +198,20 @@ public class RoomEditActivity extends Activity {
 
     private void doDisband()
     {
-        cycle = false;
         dialog = new ProgressDialog(RoomEditActivity.this);
         dialog.setMessage("Disbanding frequency. Please wait....");
         dialog.setIndeterminate(true);
         dialog.show();
         mSocket.emit("delete_room", thisRoom.toJson());
         //Use timeout class and handler to stop this from going forever.
-        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
-        thread.start();
+//        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+//        thread.start();
+        timerThread = new Timeout(handler);
+        timerThread.start();
     }
 
     private void updateLatLng()
     {
-        cycle = false;
         AlertDialog.Builder builder = new AlertDialog.Builder(RoomEditActivity.this);
         builder.setMessage("Reset the origin of the frequency to your current location?")
                 .setCancelable(false)
@@ -245,7 +244,6 @@ public class RoomEditActivity extends Activity {
 
     public void updateFrequency()
     {
-        cycle = false;
         thisRoom.updateRoomName(((EditText) findViewById(R.id.edit_editText_fname)).getText().toString());
         thisRoom.updateIsPrivate(((CheckBox) findViewById(R.id.edit_checkBox_fprivate)).isChecked());
         thisRoom.updateIsRanged(((CheckBox) findViewById(R.id.edit_checkBox_frange)).isChecked());
@@ -297,8 +295,10 @@ public class RoomEditActivity extends Activity {
 
         mSocket.emit("update_room", thisRoom.toJson());
         //Use timeout class and handler to stop this from going forever.
-        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
-        thread.start();
+//        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+//        thread.start();
+        timerThread = new Timeout(handler);
+        timerThread.start();
     }
 
     //Use to signify update success.
@@ -372,12 +372,12 @@ public class RoomEditActivity extends Activity {
 
             try {
                 dialog.dismiss();
+                timerThread.interrupt();
             } catch (Exception ex) {
 
             }
             if (msg.what == 0) {
                 //Update Success
-                cycle = true;
                 Toast.makeText(RoomEditActivity.this,"Successfully updated frequency!",Toast.LENGTH_LONG).show();
                 Intent intent = new Intent();
                 intent.putExtra("payload", "something");
@@ -388,7 +388,6 @@ public class RoomEditActivity extends Activity {
             {
                 //Delete Success
                 Toast.makeText(RoomEditActivity.this,"Successfully deleted frequency!",Toast.LENGTH_LONG).show();
-                cycle = true;
                 Intent intent = new Intent();
                 intent.putExtra("payload", "something");
                 setResult(RESULT_OK, intent);
@@ -396,22 +395,19 @@ public class RoomEditActivity extends Activity {
             }
             else if(msg.what == 2)
             {
-                cycle = true;
                 //Whatever failure message the server sent.
                 Toast.makeText(RoomEditActivity.this,(String)msg.obj,Toast.LENGTH_LONG).show();
             }
             else if (msg.what == 3) {
-                if (!cycle) {
-                    Toast.makeText(RoomEditActivity.this,"Connection timed out!",Toast.LENGTH_LONG).show();
-                    //TODO: Mike: Investigate why the connection isn't working.
-                }
+                Toast.makeText(RoomEditActivity.this,"Connection timed out!",Toast.LENGTH_LONG).show();
             }
             //Reauth needed
             else if(msg.what == 254)
             {
-                cycle = true;
-                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
-                thread.start();
+//                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+//                thread.start();
+                timerThread = new Timeout(handler);
+                timerThread.start();
                 //TODO: Fix this variable.
                 //done = false;
 

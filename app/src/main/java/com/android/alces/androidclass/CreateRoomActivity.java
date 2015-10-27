@@ -28,9 +28,10 @@ public class CreateRoomActivity extends Activity {
     private EditText etFrequencyRange;
     private EditText etRoomName;
     private Button btnCreate;
-    private Boolean done = false;
     private Socket mSocket = Global.globalSocket;
     ProgressDialog dialog;
+
+    Timeout timerThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,9 +148,10 @@ public class CreateRoomActivity extends Activity {
         }
 
         mSocket.emit("create_room", json);
-        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
-        thread.start();
-        done = false;
+//        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+//        thread.start();
+        timerThread = new Timeout(handler);
+        timerThread.start();
 
         dialog = new ProgressDialog(this);
         dialog.setMessage("Attempting to create frequency...");
@@ -202,6 +204,7 @@ public class CreateRoomActivity extends Activity {
         public boolean handleMessage(Message msg) {
             try {
                 dialog.dismiss();
+                timerThread.interrupt();
             }
             catch(Exception ex)
             {
@@ -209,7 +212,6 @@ public class CreateRoomActivity extends Activity {
             }
 
             if(msg.what==0){
-                done = true;
                 AlertDialog.Builder builder = new AlertDialog.Builder(CreateRoomActivity.this);
                 builder.setMessage((String)msg.obj)
                         .setCancelable(false)
@@ -228,22 +230,19 @@ public class CreateRoomActivity extends Activity {
             else if(msg.what == 1)
             {
                 //Refused for some reason.
-                done = true;
                 //TODO: Show refusal message somehow
             }
             else if(msg.what == 3)
             {
-                //timeout. authCycle prevents us from stepping on the toes of authentication
-                if(!done) {
-                    //TODO: Create timeout display code.
-                }
+                Toast.makeText(CreateRoomActivity.this, "Timeout from the server!", Toast.LENGTH_LONG);
             }
             //Reauth needed
             else if(msg.what == 254)
             {
-                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
-                thread.start();
-                done = false;
+//                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+//                thread.start();
+                timerThread = new Timeout(handler);
+                timerThread.start();
 
                 dialog = new ProgressDialog(CreateRoomActivity.this);
                 dialog.setMessage("You lost connection. Reconnecting...");
