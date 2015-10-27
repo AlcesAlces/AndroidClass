@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
@@ -30,7 +31,7 @@ public class Register extends Activity {
     TextView tvMessage;
     ProgressDialog dialog;
     private Socket mSocket;
-    private Boolean authCycle = false;
+    Timeout timerThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,8 +160,8 @@ public class Register extends Activity {
 
         //Send some information to the server.
         mSocket.emit("create", json);
-        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
-        thread.start();
+        timerThread = new Timeout(handler);
+        timerThread.start();
     }
 
     Handler handler = new Handler(new Handler.Callback() {
@@ -170,6 +171,7 @@ public class Register extends Activity {
             if(dialog != null)
             {
                 dialog.dismiss();
+                timerThread.interrupt();
             }
 
             if(msg.what==0){
@@ -178,7 +180,6 @@ public class Register extends Activity {
             }
             else if(msg.what==2)
             {
-                authCycle = true;
                 //Success
                 AlertDialog.Builder builder = new AlertDialog.Builder(Register.this);
                 builder.setMessage((String)msg.obj)
@@ -195,9 +196,7 @@ public class Register extends Activity {
             else if(msg.what == 3)
             {
                 //timeout. authCycle prevents us from stepping on the toes of authentication
-                if(!authCycle) {
-                    tvMessage.setText("Connection timed out from the server");
-                }
+                Toast.makeText(Register.this, "Timed out from server", Toast.LENGTH_LONG);
             }
             return true;
         }
