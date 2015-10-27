@@ -206,7 +206,7 @@ public class RoomEditActivity extends Activity {
         dialog.show();
         mSocket.emit("delete_room", thisRoom.toJson());
         //Use timeout class and handler to stop this from going forever.
-        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
         thread.start();
     }
 
@@ -297,7 +297,7 @@ public class RoomEditActivity extends Activity {
 
         mSocket.emit("update_room", thisRoom.toJson());
         //Use timeout class and handler to stop this from going forever.
-        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
         thread.start();
     }
 
@@ -410,7 +410,7 @@ public class RoomEditActivity extends Activity {
             else if(msg.what == 254)
             {
                 cycle = true;
-                Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
                 thread.start();
                 //TODO: Fix this variable.
                 //done = false;

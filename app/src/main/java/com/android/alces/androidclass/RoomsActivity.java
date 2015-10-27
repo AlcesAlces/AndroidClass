@@ -121,7 +121,7 @@ public class RoomsActivity extends Activity {
         dialog.setIndeterminate(true);
         dialog.show();
         mSocket.emit("get all rooms", "nothing");
-        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
         thread.start();
     }
 
@@ -297,14 +297,14 @@ public class RoomsActivity extends Activity {
             {
                 if(!done)
                 {
-                    //TODO: Add timeout to this section
+                    Toast.makeText(RoomsActivity.this, "Connection timed out!", Toast.LENGTH_LONG);
                 }
             }
             //Reauth needed
             else if(msg.what == 254)
             {
                 done = true;
-                Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
                 thread.start();
                 //TODO: Fix this variable.
                 //done = false;

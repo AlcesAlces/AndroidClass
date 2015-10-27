@@ -195,7 +195,7 @@ public class MainActivity extends Activity {
         mSocket.emit("authenticate", json);
 
         //Create a timeout thread which will sit in the background and verify that everything is Kosher.
-        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
         thread.start();
     }
 

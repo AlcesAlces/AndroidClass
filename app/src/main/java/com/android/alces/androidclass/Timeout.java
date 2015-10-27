@@ -9,9 +9,8 @@ public class Timeout implements Runnable{
     int timeoutTime = 10000;
     Handler handler;
 
-    public Timeout(int timeout, Handler handle)
+    public Timeout(Handler handle)
     {
-        timeoutTime = timeout;
         handler = handle;
     }
 

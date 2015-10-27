@@ -33,9 +33,6 @@ public class RangeInfo {
                 lat = 0.0;
                 lon = 0.0;
             }
-
-
-
             range = (int)json.get("range");
             isRanged = (range != -1);
 

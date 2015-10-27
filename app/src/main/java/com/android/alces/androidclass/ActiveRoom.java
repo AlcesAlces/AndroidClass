@@ -143,7 +143,7 @@ public class ActiveRoom extends Activity {
             //Reauth needed
             else if(msg.what == 254)
             {
-                Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
                 thread.start();
                 //TODO: Fix this variable.
                 //done = false;

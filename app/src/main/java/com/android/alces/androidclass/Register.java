@@ -159,7 +159,7 @@ public class Register extends Activity {
 
         //Send some information to the server.
         mSocket.emit("create", json);
-        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
         thread.start();
     }
 

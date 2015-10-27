@@ -147,7 +147,7 @@ public class CreateRoomActivity extends Activity {
         }
 
         mSocket.emit("create_room", json);
-        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
         thread.start();
         done = false;
 
@@ -241,7 +241,7 @@ public class CreateRoomActivity extends Activity {
             //Reauth needed
             else if(msg.what == 254)
             {
-                Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
+                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
                 thread.start();
                 done = false;
 
