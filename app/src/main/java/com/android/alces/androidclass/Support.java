@@ -37,4 +37,16 @@ public class Support {
             bos.close();
         }
     }
+
+    public static class Connection
+    {
+        public static void checkConnection()
+        {
+            if(!Global.globalSocket.connected())
+            {
+                Global.globalSocket.connect();
+            }
+
+        }
+    }
 }

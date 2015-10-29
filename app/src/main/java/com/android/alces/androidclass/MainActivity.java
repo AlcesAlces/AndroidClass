@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
     ProgressDialog dialog;
 
     Timeout timerThread;
+    ConnectionBabysitter babysitter;
 
     private Socket mSocket;
     {
@@ -70,6 +71,8 @@ public class MainActivity extends Activity {
 
         tvMessages = (TextView) findViewById(R.id.tvLoginMessages);
         mSocket.connect();
+        babysitter = new ConnectionBabysitter(handler);
+        babysitter.start();
 
         //TODO: Handle a non-connection situation.
         //Something like if(mSocket.isConnected()....
