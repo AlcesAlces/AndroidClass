@@ -20,8 +20,6 @@ import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.engineio.client.Socket;
-import com.google.common.io.BaseEncoding;
-import com.google.common.io.Files;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -215,7 +213,8 @@ public class ActiveRoom extends Activity {
     {
         File outputFile = new File(mFileName);
         try {
-            byte[] toEncode = Files.toByteArray(outputFile);
+            //byte[] toEncode = Files.toByteArray(outputFile);
+            byte[] toEncode = Support.Files.toByteArray(outputFile);
             //This shit is REALLY slow
             //String encode = BaseEncoding.base64().encode(toEncode);
             String encode = Base64.encodeToString(toEncode, 0);
@@ -266,13 +265,15 @@ public class ActiveRoom extends Activity {
             {
                 //TODO: Hack solution for testing
                 String encoded = (String)msg.obj;
-                encoded = encoded.trim().replaceAll("\n", "");
-                byte[] decode = BaseEncoding.base64().decode(encoded);
-                File outputFile = new File(mFileName);
+                //encoded = encoded.trim().replaceAll("\n", "");
+                //TODO: Check this
+                byte[] decode = Base64.decode(encoded,0);
+                //File outputFile = new File(mFileName);
 
                 try {
 
-                    Files.write(decode, outputFile);
+                    //Files.write(decode, outputFile);
+                    Support.Files.saveFileFromBytes(decode, mFileName);
                 }
                 catch(Exception ex)
                 {
