@@ -248,7 +248,6 @@ public class RoomsActivity extends Activity {
                 JSONArray tempJson = (JSONArray) msg.obj;
                 ArrayList<Room> listItems = new ArrayList<>();
 
-                dialog.dismiss();
                 for (int i = 0; i < tempJson.length(); i++) {
                     try {
                         listItems.add(new Room(tempJson.getJSONObject(i)));

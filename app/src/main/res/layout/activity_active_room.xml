@@ -33,6 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="313dp"
             android:id="@+id/active_list_users" />
+
     </LinearLayout>
 
     <LinearLayout

@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -14,7 +15,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +25,7 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.engineio.client.Socket;
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,6 +34,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public class ActiveRoom extends Activity {
 
@@ -40,6 +45,8 @@ public class ActiveRoom extends Activity {
     String mFileName;
     private MediaRecorder mRecorder = null;
     private MediaPlayer mPlayer = null;
+    private ArrayAdapter<UserCompact> userAdapter;
+    private ListView lvUsers;
 
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
      *at https://github.com/nkzawa/socket.io-android-chat this integrates the chat aswell.
@@ -50,8 +57,9 @@ public class ActiveRoom extends Activity {
         setContentView(R.layout.activity_active_room);
 
         Global._currentHandler = handler;
-
+        lvUsers = (ListView) findViewById(R.id.active_list_users);
         mFileName = getApplicationInfo().dataDir += "/audiorecordtest.mp4";
+        fileChecks();
 
         Bundle extras = getIntent().getExtras();
         //The bundle is a serialized json object with the Gson code.
@@ -105,6 +113,8 @@ public class ActiveRoom extends Activity {
         });
 
         mSocket.on("broadcast", recieveBroadcast);
+        mSocket.on("room_users_change",roomContentChange);
+        mSocket.emit("request_all_users_room", "empty");
     }
 
     @Override
@@ -166,6 +176,21 @@ public class ActiveRoom extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void fileChecks()
+    {
+        try {
+            File temp = new File(mFileName);
+            if (!temp.exists()) {
+                temp.createNewFile();
+            }
+        }
+        catch(IOException ex)
+        {
+            mFileName = Environment.getExternalStorageDirectory().toString() + "/audiorecordtest.mp4";
+            //Can't access that file. D:
+        }
+    }
+
     private void startRecording() {
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -175,10 +200,10 @@ public class ActiveRoom extends Activity {
 
         try {
             mRecorder.prepare();
+            mRecorder.start();
         } catch (IOException e) {
+            Toast.makeText(ActiveRoom.this, "DEBUG" + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-
-        mRecorder.start();
     }
 
     private void stopRecording()
@@ -251,6 +276,27 @@ public class ActiveRoom extends Activity {
         }
     };
 
+    private Emitter.Listener roomContentChange = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+
+            JSONArray data = (JSONArray) args[0];
+//            String user;
+//            String payload;
+//            try {
+//                user = data.getString("user");
+//                payload = data.getString("payload");
+//            } catch (JSONException e) {
+//                return;
+//            }
+
+            Message msg = handler.obtainMessage();
+            msg.what = 1;
+            msg.obj = data;
+            handler.sendMessage(msg);
+        }
+    };
+
     Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -265,8 +311,7 @@ public class ActiveRoom extends Activity {
             {
                 //TODO: Hack solution for testing
                 String encoded = (String)msg.obj;
-                //encoded = encoded.trim().replaceAll("\n", "");
-                //TODO: Check this
+                encoded = encoded.trim().replaceAll("\n", "");
                 byte[] decode = Base64.decode(encoded,0);
                 //File outputFile = new File(mFileName);
 
@@ -281,6 +326,25 @@ public class ActiveRoom extends Activity {
                 }
 
                 startPlaying();
+            }
+            if(msg.what == 1)
+            {
+                JSONArray tempJson = (JSONArray) msg.obj;
+                ArrayList<UserCompact> listItems = new ArrayList<>();
+
+                for (int i = 0; i < tempJson.length(); i++) {
+                    try {
+                        listItems.add(new UserCompact(tempJson.getJSONObject(i)));
+                    } catch (JSONException ex) {
+
+                    }
+                }
+
+                userAdapter = new ArrayAdapter<UserCompact>(getBaseContext(),
+                        android.R.layout.simple_list_item_1,
+                        listItems);
+
+                lvUsers.setAdapter(userAdapter);
             }
             //Reauth needed
             else if(msg.what == 254)
@@ -327,28 +391,4 @@ public class ActiveRoom extends Activity {
             handler.sendMessage(msg);
         }
     };
-
-    public static byte[] convertFileToByteArray(File f)
-        {
-               byte[] byteArray = null;
-              try
-              {
-                            InputStream inputStream = new FileInputStream(f);
-                   ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] b = new byte[1024*8];
-                    int bytesRead = 0;
-
-                           while((bytesRead = inputStream.read(b)) != -1)
-                        {
-                                   bos.write(b,0,bytesRead);
-                    }
-
-                            byteArray = bos.toByteArray();
-                }
-                catch(IOException e)
-                {
-                            e.printStackTrace();
-                }
-                return byteArray;
-            }
 }
