@@ -340,6 +340,7 @@ public class ActiveRoom extends Activity {
                 JSONArray tempJson = (JSONArray) msg.obj;
                 ArrayList<UserCompact> listItems = new ArrayList<>();
 
+                //TODO: Json empty?
                 for (int i = 0; i < tempJson.length(); i++) {
                     try {
                         listItems.add(new UserCompact(tempJson.getJSONObject(i)));
