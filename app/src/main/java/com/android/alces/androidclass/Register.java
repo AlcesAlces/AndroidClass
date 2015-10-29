@@ -71,7 +71,7 @@ public class Register extends Activity {
         super.onDestroy();
 
         //TODO: Remove all socket listeners.
-        mSocket.off("refuse", onRefuse);
+        mSocket.off("refuse_reg", onRefuse);
         mSocket.off("createsuccess", onSuccess);
     }
 

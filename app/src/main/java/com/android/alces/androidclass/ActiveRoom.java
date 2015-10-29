@@ -138,6 +138,9 @@ public class ActiveRoom extends Activity {
             //TODO: handle error
         }
 
+        mSocket.off("broadcast", recieveBroadcast);
+        mSocket.off("room_users_change",roomContentChange);
+
         Global._user.resetRoom();
         mSocket.emit("leave_room", json);
 
@@ -340,12 +343,14 @@ public class ActiveRoom extends Activity {
                 JSONArray tempJson = (JSONArray) msg.obj;
                 ArrayList<UserCompact> listItems = new ArrayList<>();
 
-                //TODO: Json empty?
-                for (int i = 0; i < tempJson.length(); i++) {
-                    try {
-                        listItems.add(new UserCompact(tempJson.getJSONObject(i)));
-                    } catch (JSONException ex) {
+                //Check to see if the list is empty. Why does this happen?
+                if(tempJson != null) {
+                    for (int i = 0; i < tempJson.length(); i++) {
+                        try {
+                            listItems.add(new UserCompact(tempJson.getJSONObject(i)));
+                        } catch (JSONException ex) {
 
+                        }
                     }
                 }
 

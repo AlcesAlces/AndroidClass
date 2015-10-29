@@ -49,7 +49,7 @@ public class RoomsActivity extends Activity {
 
         getAllRooms();
 
-        mSocket.on("all rooms", displayAllRooms);
+
         Button createButton = (Button) findViewById(R.id.btnCreateRooms);
         Button refresh = (Button) findViewById(R.id.btnRefreshRooms);
 
@@ -74,8 +74,9 @@ public class RoomsActivity extends Activity {
                 getAllRooms();
             }
         });
-
-
+        //TODO: Is this depreciated
+        mSocket.off("server error", serverError);
+        mSocket.on("all rooms", displayAllRooms);
         mSocket.on("join_success", joinSuccess);
     }
 
