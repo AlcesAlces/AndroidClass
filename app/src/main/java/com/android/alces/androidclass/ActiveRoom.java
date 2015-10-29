@@ -3,6 +3,8 @@ package com.android.alces.androidclass;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Environment;
@@ -47,6 +49,7 @@ public class ActiveRoom extends Activity {
     private MediaPlayer mPlayer = null;
     private ArrayAdapter<UserCompact> userAdapter;
     private ListView lvUsers;
+    Button pttButton;
 
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
      *at https://github.com/nkzawa/socket.io-android-chat this integrates the chat aswell.
@@ -90,8 +93,8 @@ public class ActiveRoom extends Activity {
             }
         });
 
-        Button pttButton = (Button) findViewById(R.id.active_button_ptt);
-
+        pttButton = (Button) findViewById(R.id.active_button_ptt);
+        pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
         pttButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -99,12 +102,16 @@ public class ActiveRoom extends Activity {
                     case MotionEvent.ACTION_DOWN:
                         //Start action
                         startRecording();
+                        pttButton.setBackgroundColor(Color.GREEN);
+                        //pttButton.getBackground().setColorFilter(Color.parseColor("GREEN"), PorterDuff.Mode.MULTIPLY);
                         break;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_OUTSIDE:
                     case MotionEvent.ACTION_CANCEL:
                         //Stop action
                         stopRecording();
+                        pttButton.setBackgroundColor(Color.RED);
+                        //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
                         sendMessage();
                         break;
                 }

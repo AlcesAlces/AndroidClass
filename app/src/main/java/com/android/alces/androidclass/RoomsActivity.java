@@ -51,6 +51,7 @@ public class RoomsActivity extends Activity {
 
         mSocket.on("all rooms", displayAllRooms);
         Button createButton = (Button) findViewById(R.id.btnCreateRooms);
+        Button refresh = (Button) findViewById(R.id.btnRefreshRooms);
 
         createButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,6 +65,13 @@ public class RoomsActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 tryJoin(position);
+            }
+        });
+
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getAllRooms();
             }
         });
 
