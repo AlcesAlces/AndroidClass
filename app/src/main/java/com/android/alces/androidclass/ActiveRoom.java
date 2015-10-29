@@ -185,17 +185,18 @@ public class ActiveRoom extends Activity {
 
     private void fileChecks()
     {
-        try {
-            File temp = new File(mFileName);
-            if (!temp.exists()) {
-                temp.createNewFile();
-            }
-        }
-        catch(IOException ex)
-        {
-            mFileName = Environment.getExternalStorageDirectory().toString() + "/audiorecordtest.mp4";
-            //Can't access that file. D:
-        }
+//        try {
+//            File temp = new File(mFileName);
+//            if (!temp.exists()) {
+//                temp.createNewFile();
+//            }
+//        }
+//        catch(IOException ex)
+//        {
+//            mFileName = Environment.getExternalStorageDirectory().toString() + "/audiorecordtest.mp4";
+//            //Can't access that file. D:
+//        }
+        mFileName = Environment.getExternalStorageDirectory().toString() + "/audiorecordtest.mp4";
     }
 
     private void startRecording() {
@@ -231,7 +232,7 @@ public class ActiveRoom extends Activity {
         }
         catch(IOException ex)
         {
-
+            Toast.makeText(ActiveRoom.this, "IO Exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
