@@ -35,6 +35,7 @@ public class ConnectionBabysitter extends Thread implements Runnable{
         catch(InterruptedException ex)
         {
             //TODO: Something something.
+            int i = 0;
         }
 
         if(!this.isInterrupted()) {

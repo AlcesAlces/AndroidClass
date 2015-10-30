@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -101,6 +102,16 @@ public class MainActivity extends Activity {
                 Intent myIntent = new Intent(MainActivity.this, Register.class);
                 MainActivity.this.startActivity(myIntent);
             }});
+
+        editTextPass.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    tryAuth();
+                }
+                return true;
+            }
+        });
     }
 
 

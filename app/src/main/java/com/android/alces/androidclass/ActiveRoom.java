@@ -2,6 +2,7 @@ package com.android.alces.androidclass;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -10,15 +11,17 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,16 +29,11 @@ import android.widget.Toast;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.engineio.client.Socket;
 import com.google.gson.Gson;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 public class ActiveRoom extends Activity {
@@ -48,8 +46,12 @@ public class ActiveRoom extends Activity {
     private MediaRecorder mRecorder = null;
     private MediaPlayer mPlayer = null;
     private ArrayAdapter<UserCompact> userAdapter;
+    private ArrayAdapter<ChatMessage> messageAdapter;
+    private ArrayList<ChatMessage> messages = new ArrayList<>();
     private ListView lvUsers;
+    private ListView lvChat;
     Button pttButton;
+    EditText etChat;
 
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
      *at https://github.com/nkzawa/socket.io-android-chat this integrates the chat aswell.
@@ -61,6 +63,7 @@ public class ActiveRoom extends Activity {
 
         Global._currentHandler = handler;
         lvUsers = (ListView) findViewById(R.id.active_list_users);
+        lvChat = (ListView) findViewById(R.id.active_list_chat);
         mFileName = getApplicationInfo().dataDir += "/audiorecordtest.mp4";
         fileChecks();
 
@@ -119,8 +122,24 @@ public class ActiveRoom extends Activity {
             }
         });
 
+        etChat = (EditText)findViewById(R.id.active_editText_message);
+
+        etChat.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    sendChat(etChat.getText().toString());
+                    InputMethodManager imm =
+                            (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(etChat.getWindowToken(), 0);
+                }
+                return true;
+            }
+        });
+
         mSocket.on("broadcast", recieveBroadcast);
         mSocket.on("room_users_change",roomContentChange);
+        mSocket.on("new_message", roomNewMessage);
         mSocket.emit("request_all_users_room", "empty");
     }
 
@@ -140,6 +159,7 @@ public class ActiveRoom extends Activity {
 
         mSocket.off("broadcast", recieveBroadcast);
         mSocket.off("room_users_change",roomContentChange);
+        mSocket.off("new_message", roomNewMessage);
 
         Global._user.resetRoom();
         mSocket.emit("leave_room", json);
@@ -266,6 +286,13 @@ public class ActiveRoom extends Activity {
         }
     }
 
+    private void sendChat(String message)
+    {
+        ChatMessage toSend = new ChatMessage(message, Global._user.name, "ohno");
+        mSocket.emit("new_message", toSend.toJson());
+        etChat.setText("");
+    }
+
     private Emitter.Listener recieveBroadcast = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
@@ -303,6 +330,27 @@ public class ActiveRoom extends Activity {
 
             Message msg = handler.obtainMessage();
             msg.what = 1;
+            msg.obj = data;
+            handler.sendMessage(msg);
+        }
+    };
+
+    private Emitter.Listener roomNewMessage = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+
+            JSONObject data = (JSONObject) args[0];
+//            String user;
+//            String payload;
+//            try {
+//                user = data.getString("user");
+//                payload = data.getString("payload");
+//            } catch (JSONException e) {
+//                return;
+//            }
+
+            Message msg = handler.obtainMessage();
+            msg.what = 2;
             msg.obj = data;
             handler.sendMessage(msg);
         }
@@ -359,6 +407,16 @@ public class ActiveRoom extends Activity {
                         listItems);
 
                 lvUsers.setAdapter(userAdapter);
+            }
+            else if (msg.what == 2)
+            {
+                messages.add(new ChatMessage((JSONObject)msg.obj));
+                messageAdapter = new ArrayAdapter<ChatMessage>(getBaseContext(),
+                        android.R.layout.simple_list_item_1,
+                        messages);
+
+                lvChat.setAdapter(messageAdapter);
+                lvChat.setSelection(messageAdapter.getCount() - 1);
             }
             //Reauth needed
             else if(msg.what == 254)
