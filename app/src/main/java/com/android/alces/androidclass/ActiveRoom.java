@@ -129,16 +129,16 @@ public class ActiveRoom extends Activity {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     sendChat(etChat.getText().toString());
-                    InputMethodManager imm =
-                            (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(etChat.getWindowToken(), 0);
+//                    InputMethodManager imm =
+//                            (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//                    imm.hideSoftInputFromWindow(etChat.getWindowToken(), 0);
                 }
                 return true;
             }
         });
 
         mSocket.on("broadcast", recieveBroadcast);
-        mSocket.on("room_users_change",roomContentChange);
+        mSocket.on("room_users_change", roomContentChange);
         mSocket.on("new_message", roomNewMessage);
         mSocket.emit("request_all_users_room", "empty");
     }
@@ -239,6 +239,12 @@ public class ActiveRoom extends Activity {
 
     private void stopRecording()
     {
+        try {
+            Thread.sleep(100);
+        }
+        catch(InterruptedException ex) {
+            //TODO: D:
+        }
         mRecorder.stop();
         mRecorder.release();
         mRecorder = null;

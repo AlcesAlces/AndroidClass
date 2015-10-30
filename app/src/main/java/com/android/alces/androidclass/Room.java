@@ -21,6 +21,8 @@ public class Room {
     public String name;
     public boolean isPrivate;
     public RangeInfo rangeInfo;
+    public int numUsers;
+
     //TODO: Going to add another property to check for who is in the room
 
     //Create the room object from a JSONObject. Ezpz
@@ -33,6 +35,7 @@ public class Room {
             isPrivate = (Integer.parseInt((inputJson.get("isPrivate").toString()))
                          == 0 ? false : true);
             rangeInfo = new RangeInfo(inputJson);
+            numUsers = inputJson.getInt("numUsers");
         }
         catch(JSONException exception)
         {
@@ -43,7 +46,7 @@ public class Room {
     @Override
     public String toString()
     {
-        return this.name;
+        return this.name + " : " + numUsers;
     }
 
     public void updateRangeLatLon(double lat, double lon)
