@@ -5,7 +5,7 @@ import android.os.Message;
 
 public class ConnectionBabysitter extends Thread implements Runnable{
 
-    int startTimeout = 30000;
+    long startTimeout = 30000;
     Handler handler;
     boolean connecting = false;
 
@@ -16,18 +16,25 @@ public class ConnectionBabysitter extends Thread implements Runnable{
 
     public void run()
     {
-        boolean outOfTime = false;
-
-        long startTime = System.currentTimeMillis();
-
-        while(!outOfTime && !this.isInterrupted())
+//        boolean outOfTime = false;
+//
+//        long startTime = System.currentTimeMillis();
+//
+//        while(!outOfTime && !this.isInterrupted())
+//        {
+//            long currentTime = System.currentTimeMillis();
+//
+//            if((currentTime - startTime) >= startTimeout)
+//            {
+//                outOfTime = true;
+//            }
+//        }
+        try {
+            Thread.sleep(startTimeout);
+        }
+        catch(InterruptedException ex)
         {
-            long currentTime = System.currentTimeMillis();
-
-            if((currentTime - startTime) >= startTimeout)
-            {
-                outOfTime = true;
-            }
+            //TODO: Something something.
         }
 
         if(!this.isInterrupted()) {
