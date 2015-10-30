@@ -132,8 +132,13 @@ public class ActiveRoom extends Activity {
 //                    InputMethodManager imm =
 //                            (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 //                    imm.hideSoftInputFromWindow(etChat.getWindowToken(), 0);
+                    return true;
                 }
-                return true;
+                else
+                {
+                    int i = 0;
+                }
+                return false;
             }
         });
 
