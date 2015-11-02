@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,7 +25,7 @@ import com.github.nkzawa.socketio.client.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class CreateRoomActivity extends Activity {
+public class CreateRoomActivity extends AppCompatActivity {
 
     private EditText etFrequencyRange;
     private EditText etRoomName;
@@ -68,6 +70,9 @@ public class CreateRoomActivity extends Activity {
 
         mSocket.on("room_create_success", onSuccess);
         mSocket.on("refuse_room_create", onRefuse);
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
     }
 
     @Override
@@ -93,10 +98,6 @@ public class CreateRoomActivity extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }

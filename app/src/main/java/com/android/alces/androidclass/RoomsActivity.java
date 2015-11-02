@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,7 +30,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class RoomsActivity extends Activity {
+public class RoomsActivity extends AppCompatActivity {
 
     private Socket mSocket = Global.globalSocket;
     private ListView lv;
@@ -78,6 +79,9 @@ public class RoomsActivity extends Activity {
         mSocket.off("server error", serverError);
         mSocket.on("all rooms", displayAllRooms);
         mSocket.on("join_success", joinSuccess);
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
     }
 
     @Override
@@ -103,10 +107,6 @@ public class RoomsActivity extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }

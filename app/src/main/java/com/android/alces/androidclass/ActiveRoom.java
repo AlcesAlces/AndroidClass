@@ -12,6 +12,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -36,7 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class ActiveRoom extends Activity {
+public class ActiveRoom extends AppCompatActivity {
 
     Room thisRoom = null;
     private com.github.nkzawa.socketio.client.Socket mSocket = Global.globalSocket;
@@ -146,6 +148,9 @@ public class ActiveRoom extends Activity {
         mSocket.on("room_users_change", roomContentChange);
         mSocket.on("new_message", roomNewMessage);
         mSocket.emit("request_all_users_room", "empty");
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
     }
 
     @Override
@@ -163,7 +168,7 @@ public class ActiveRoom extends Activity {
         }
 
         mSocket.off("broadcast", recieveBroadcast);
-        mSocket.off("room_users_change",roomContentChange);
+        mSocket.off("room_users_change", roomContentChange);
         mSocket.off("new_message", roomNewMessage);
 
         Global._user.resetRoom();
@@ -203,10 +208,7 @@ public class ActiveRoom extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+
 
         return super.onOptionsItemSelected(item);
     }
@@ -421,7 +423,7 @@ public class ActiveRoom extends Activity {
             }
             else if (msg.what == 2)
             {
-                messages.add(new ChatMessage((JSONObject)msg.obj));
+                messages.add(new ChatMessage((JSONObject) msg.obj));
                 messageAdapter = new ArrayAdapter<ChatMessage>(getBaseContext(),
                         android.R.layout.simple_list_item_1,
                         messages);
