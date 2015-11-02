@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,7 +43,8 @@ public class MainActivity extends Activity {
     Button btnRegister;
     ProgressDialog dialog;
 
-    boolean authCycle = false;
+    Timeout timerThread;
+    ConnectionBabysitter babysitter;
 
     private Socket mSocket;
     {
@@ -69,14 +71,16 @@ public class MainActivity extends Activity {
         editTextPass = (EditText) findViewById(R.id.editText2);
 
         tvMessages = (TextView) findViewById(R.id.tvLoginMessages);
-
         mSocket.connect();
+        babysitter = new ConnectionBabysitter(handler);
+        babysitter.start();
 
         //TODO: Handle a non-connection situation.
         //Something like if(mSocket.isConnected()....
 
         mSocket.on("refuse", onRefuse);
         mSocket.on("approve", onApprove);
+        mSocket.on("reauth", onReauth);
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
 
@@ -98,6 +102,17 @@ public class MainActivity extends Activity {
                 Intent myIntent = new Intent(MainActivity.this, Register.class);
                 MainActivity.this.startActivity(myIntent);
             }});
+
+        editTextPass.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    tryAuth();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
 
@@ -160,18 +175,28 @@ public class MainActivity extends Activity {
             dialog.setIndeterminate(true);
             dialog.show();
 
+            json.put("name", editTextUser.getText().toString());
+            json.put("pass", editTextPass.getText().toString());
+
             //TODO: Need to check for more cases here.
             LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
             Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            double longitude = location.getLongitude();
-            double latitude = location.getLatitude();
-
-            json.put("name", editTextUser.getText().toString());
-            json.put("pass", editTextPass.getText().toString());
-            json.put("lat", latitude);
-            json.put("lon", longitude);
-
-            Global._user = new User(editTextUser.getText().toString(), latitude, longitude);
+            try {
+                double longitude = location.getLongitude();
+                double latitude = location.getLatitude();
+                json.put("lat", latitude);
+                json.put("lon", longitude);
+                Global._user = new User(editTextUser.getText().toString(), latitude, longitude);
+            }
+            catch(NullPointerException nptr)
+            {
+                //Default location.
+                double lat = 0.0;
+                double lon = 0.0;
+                json.put("lat", lat);
+                json.put("lon", lon);
+                Global._user = new User(editTextUser.getText().toString(), lat, lon);
+            }
         }
         catch(JSONException ex)
         {
@@ -185,8 +210,12 @@ public class MainActivity extends Activity {
         mSocket.emit("authenticate", json);
 
         //Create a timeout thread which will sit in the background and verify that everything is Kosher.
-        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
-        thread.start();
+
+        timerThread = new Timeout(handler);
+        timerThread.start();
+
+        //Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+        //thread.start();
     }
 
     private Emitter.Listener onRefuse = new Emitter.Listener() {
@@ -207,6 +236,24 @@ public class MainActivity extends Activity {
             Message msg = handler.obtainMessage();
             msg.what = 0;
             msg.obj = message;
+            handler.sendMessage(msg);
+        }
+    };
+
+    private Emitter.Listener onReauth = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+//            JSONObject data = (JSONObject) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+
+            Message msg = handler.obtainMessage();
+            msg.what = 254;
             handler.sendMessage(msg);
         }
     };
@@ -236,6 +283,7 @@ public class MainActivity extends Activity {
 
             try {
                 dialog.dismiss();
+                timerThread.interrupt();
             }
             catch(Exception ex)
             {
@@ -243,25 +291,36 @@ public class MainActivity extends Activity {
             }
 
             if(msg.what==0){
-                authCycle = true;
                 tvMessages.setText((String)msg.obj);
             }
             else if(msg.what == 1)
             {
-                authCycle = true;
                 success();
             }
             else if(msg.what == 2)
             {
-                authCycle = true;
                 creationSuccess();
             }
             else if(msg.what == 3)
             {
                 //timeout. authCycle prevents us from stepping on the toes of authentication
-                if(!authCycle) {
-                    tvMessages.setText("Connection timed out from the server");
+//                if(!authCycle) {
+//                    tvMessages.setText("Connection timed out from the server");
+//                }
+
+                Toast.makeText(MainActivity.this, "Timed out from the server!", Toast.LENGTH_LONG).show();
+            }
+            else if(msg.what == 254)
+            {
+                //Reauth message.
+                //TODO: Ensure that this logic is executing correctly.
+                if(Global._currentHandler != null)
+                {
+                    Message toSend = Global._currentHandler.obtainMessage();
+                    toSend.what = 254;
+                    Global._currentHandler.sendMessage(toSend);
                 }
+                //Toast.makeText(MainActivity.this,(String)msg.obj,Toast.LENGTH_LONG).show();
             }
             setComponentsEnabled(true);
             return true;

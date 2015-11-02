@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
@@ -27,14 +28,18 @@ public class CreateRoomActivity extends Activity {
     private EditText etFrequencyRange;
     private EditText etRoomName;
     private Button btnCreate;
-    private Boolean done = false;
     private Socket mSocket = Global.globalSocket;
     ProgressDialog dialog;
+
+    Timeout timerThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_room);
+
+        //This works. It lets us know which handler the main activity should talk to.
+        Global._currentHandler = handler;
 
         etFrequencyRange = (EditText) findViewById(R.id.create_editText_frange);
         etRoomName = (EditText) findViewById(R.id.create_editText_fname);
@@ -143,9 +148,10 @@ public class CreateRoomActivity extends Activity {
         }
 
         mSocket.emit("create_room", json);
-        Thread thread = new Thread(new Timeout(10000,handler), "timeout_thread");
-        thread.start();
-        done = false;
+//        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+//        thread.start();
+        timerThread = new Timeout(handler);
+        timerThread.start();
 
         dialog = new ProgressDialog(this);
         dialog.setMessage("Attempting to create frequency...");
@@ -193,10 +199,12 @@ public class CreateRoomActivity extends Activity {
     };
 
     Handler handler = new Handler(new Handler.Callback() {
+
         @Override
         public boolean handleMessage(Message msg) {
             try {
                 dialog.dismiss();
+                timerThread.interrupt();
             }
             catch(Exception ex)
             {
@@ -204,13 +212,11 @@ public class CreateRoomActivity extends Activity {
             }
 
             if(msg.what==0){
-                done = true;
                 AlertDialog.Builder builder = new AlertDialog.Builder(CreateRoomActivity.this);
                 builder.setMessage((String)msg.obj)
                         .setCancelable(false)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                //TODO: Reload the RoomsActivity listview so it displays the new thing
                                 Intent intent = new Intent();
                                 intent.putExtra("payload", "something");
                                 setResult(RESULT_OK, intent);
@@ -224,19 +230,54 @@ public class CreateRoomActivity extends Activity {
             else if(msg.what == 1)
             {
                 //Refused for some reason.
-                done = true;
                 //TODO: Show refusal message somehow
             }
             else if(msg.what == 3)
             {
-                //timeout. authCycle prevents us from stepping on the toes of authentication
-                if(!done) {
-                    //TODO: Create timeout display code.
-                }
+                Toast.makeText(CreateRoomActivity.this, "Timeout from the server!", Toast.LENGTH_LONG);
+            }
+            //Reauth needed
+            else if(msg.what == 254)
+            {
+//                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
+//                thread.start();
+                timerThread = new Timeout(handler);
+                timerThread.start();
+
+                dialog = new ProgressDialog(CreateRoomActivity.this);
+                dialog.setMessage("You lost connection. Reconnecting...");
+                dialog.setIndeterminate(true);
+                dialog.show();
+
+                mSocket.emit("reauth", Global._user.toJson());
+                mSocket.once("reauth_success", reauthRecover);
+            }
+            //Reauth recovery
+            else if(msg.what == 253)
+            {
+                Toast.makeText(CreateRoomActivity.this, "Reauthed successfully.", Toast.LENGTH_LONG).show();
             }
             return true;
         }
     });
+
+    private Emitter.Listener reauthRecover = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+//            JSONObject data = (JSONObject) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+
+            Message msg = handler.obtainMessage();
+            msg.what = 253;
+            handler.sendMessage(msg);
+        }
+    };
 
     /*
     //depreciated stuff. historically significant.

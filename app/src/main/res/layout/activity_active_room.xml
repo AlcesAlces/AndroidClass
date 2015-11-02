@@ -5,63 +5,75 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:orientation="vertical"
-    tools:context="com.android.alces.androidclass.ActiveRoom"
-    android:weightSum="1">
+    tools:context="com.android.alces.androidclass.ActiveRoom">
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="356dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:weightSum="1">
+        android:layout_weight="1.8">
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="fill_parent"
                 android:text="So and So's Frequency"
                 android:id="@+id/tvRoomFrequencyName"
-                android:layout_gravity="center"
-                android:textSize="24sp"/>
+                android:textSize="24sp"
+                android:layout_weight="1"
+                android:layout_gravity="center"/>
 
             <Button
-                android:layout_width="142dp"
-                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
                 android:text="Freq Settings"
                 android:id="@+id/active_button_edit"
-                android:layout_gravity="center_horizontal" />
+                android:layout_weight="1"
+                android:layout_gravity="center"/>
+
+        </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_weight=".9">
 
         <ListView
-            android:layout_width="match_parent"
-            android:layout_height="313dp"
-            android:id="@+id/active_list_users" />
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/active_list_users"
+            android:layout_weight="1"/>
+
+        <ListView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/active_list_chat"
+            android:layout_weight=".5"/>
+
     </LinearLayout>
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="0.10">
+        android:layout_weight="1.6">
 
         <Button
-            android:layout_width="142dp"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
             android:text="PTT"
             android:id="@+id/active_button_ptt"
-            android:layout_gravity="center_horizontal" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="0.63">
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"/>
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/active_editText_message"
-            android:hint="Send Message" />
+            android:hint="Send Message"
+            android:layout_weight="1"
+            />
     </LinearLayout>
 
 </LinearLayout>
