@@ -29,10 +29,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.alces.adapters.ChatAdapter;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.engineio.client.Socket;
 import com.google.gson.Gson;
@@ -53,9 +55,9 @@ public class ActiveRoom extends AppCompatActivity {
     private MediaRecorder mRecorder = null;
     private MediaPlayer mPlayer = null;
     private ArrayAdapter<UserCompact> userAdapter;
-    private ArrayAdapter<ChatMessage> messageAdapter;
+    private ChatAdapter messageAdapter;
     private ArrayList<ChatMessage> messages = new ArrayList<>();
-    private ListView lvUsers;
+    private GridView lvUsers;
     private ListView lvChat;
     Button pttButton;
     EditText etChat;
@@ -67,10 +69,9 @@ public class ActiveRoom extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_active_room);
-
         setupRecieve();
         Global._currentHandler = handler;
-        lvUsers = (ListView) findViewById(R.id.active_list_users);
+        lvUsers = (GridView) findViewById(R.id.active_list_users);
         lvChat = (ListView) findViewById(R.id.active_list_chat);
         mFileName = getApplicationInfo().dataDir += "/audiorecordtest.mp4";
         fileChecks();
@@ -521,9 +522,7 @@ public class ActiveRoom extends AppCompatActivity {
             else if (msg.what == 2)
             {
                 messages.add(new ChatMessage((JSONObject) msg.obj));
-                messageAdapter = new ArrayAdapter<ChatMessage>(getBaseContext(),
-                        android.R.layout.simple_list_item_1,
-                        messages);
+                messageAdapter = new ChatAdapter(ActiveRoom.this, messages);
 
                 lvChat.setAdapter(messageAdapter);
                 lvChat.setSelection(messageAdapter.getCount() - 1);

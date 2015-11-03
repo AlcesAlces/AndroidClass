@@ -6,9 +6,10 @@ import org.json.JSONObject;
 
 public class ChatMessage {
 
-    String message;
-    String user;
+    public String message;
+    public String user;
     String id;
+    public Boolean isHeader = false;
 
     @Override
     public String toString()
@@ -36,6 +37,11 @@ public class ChatMessage {
         }
     }
 
+    public ChatMessage()
+    {
+        isHeader = true;
+    }
+
     public JSONObject toJson()
     {
         JSONObject json = new JSONObject();
@@ -50,5 +56,6 @@ public class ChatMessage {
         }
         return json;
     }
+
 
 }

@@ -52,10 +52,6 @@ public class RoomsActivity extends AppCompatActivity {
         lv = (ListView) findViewById(R.id.roomsListView);
 
         getAllRooms();
-
-
-
-
         //Button createButton = (Button) findViewById(R.id.btnCreateRooms);
         //Button refresh = (Button) findViewById(R.id.btnRefreshRooms);
 
