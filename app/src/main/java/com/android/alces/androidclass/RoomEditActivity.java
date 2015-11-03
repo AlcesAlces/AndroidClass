@@ -126,6 +126,9 @@ public class RoomEditActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_active_room, menu);
+
+        menu.findItem(R.id.action_edit).setVisible(false);
+
         return true;
     }
 
@@ -136,6 +139,14 @@ public class RoomEditActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        switch (id)
+        {
+            case R.id.action_back:
+            {
+                finish();
+                return true;
+            }
+        }
 
         return super.onOptionsItemSelected(item);
     }

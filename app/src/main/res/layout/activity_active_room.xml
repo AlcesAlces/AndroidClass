@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.android.alces.androidclass.ActiveRoom">
+    tools:context="com.android.alces.androidclass.ActiveRoom"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true">
 
     <LinearLayout
         android:orientation="vertical"
@@ -24,19 +26,18 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="83dp"
+        android:layout_height="48dp"
         android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
+                android:layout_height="38dp"
                 android:text="So and So's Frequency"
                 android:id="@+id/tvRoomFrequencyName"
                 android:textSize="24sp"
-                android:layout_weight="1"
                 android:layout_gravity="center"/>
 
-            <Button
+            Button
                 android:layout_width="wrap_content"
                 android:layout_height="33dp"
                 android:text="Freq Settings"
@@ -56,13 +57,13 @@
             android:layout_width="fill_parent"
             android:layout_height="105dp"
             android:id="@+id/active_list_users"
-            android:layout_weight="0.63" />
+            android:layout_weight="0.66" />
 
         <ListView
             android:layout_width="fill_parent"
-            android:layout_height="140dp"
+            android:layout_height="119dp"
             android:id="@+id/active_list_chat"
-            android:layout_weight="0.63" />
+            android:layout_weight="0.41" />
 
     </LinearLayout>
 

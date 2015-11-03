@@ -4,13 +4,13 @@
     tools:context="com.android.alces.androidclass.ActiveRoom">
 
     <item
-        android:title="back"
+        android:title="Back"
         android:id="@+id/action_back"
         android:icon="@drawable/ic_back"
         app:showAsAction="always"/>
 
     <item
-        android:title="edit"
+        android:title="Edit Frequency"
         android:id="@+id/action_edit"
         android:icon="@drawable/ic_edit"
         app:showAsAction="ifRoom"/>

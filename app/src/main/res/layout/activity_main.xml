@@ -5,7 +5,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity"
-    android:weightSum="1">
+    android:weightSum="1"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true">
 
     <LinearLayout
         android:orientation="vertical"

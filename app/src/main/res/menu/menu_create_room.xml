@@ -4,8 +4,9 @@
     tools:context="com.android.alces.androidclass.CreateRoomActivity">
 
     <item
-        android:title="back"
+        android:title="Back"
         android:id="@+id/action_back"
         android:icon="@drawable/ic_back"
         app:showAsAction="always"/>
+
 </menu>

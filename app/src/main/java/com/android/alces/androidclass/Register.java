@@ -86,6 +86,14 @@ public class Register extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        switch (id)
+        {
+            case R.id.action_back:
+            {
+                finish();
+                return true;
+            }
+        }
 
         return super.onOptionsItemSelected(item);
     }

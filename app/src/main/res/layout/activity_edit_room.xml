@@ -6,7 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".RoomEditActivity"
-    android:weightSum="1">
+    android:weightSum="1"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true">
 
     <LinearLayout
         android:orientation="vertical"
@@ -69,10 +71,10 @@
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
             android:ems="10"
             android:id="@+id/edit_editText_frange"
-            android:hint="Frequency Range" />
+            android:hint="Frequency Range"
+            android:inputType="number" />
     </LinearLayout>
 
     <LinearLayout

@@ -61,12 +61,14 @@ public class CreateRoomActivity extends AppCompatActivity {
             }
         });
 
+
         btnCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 tryCreateRoom(cbVisRange.isChecked(), cbPrivate.isChecked());
             }
         });
+
 
         mSocket.on("room_create_success", onSuccess);
         mSocket.on("refuse_room_create", onRefuse);
@@ -98,6 +100,14 @@ public class CreateRoomActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        switch (id)
+        {
+            case R.id.action_back:
+            {
+                finish();
+                return true;
+            }
+        }
 
         return super.onOptionsItemSelected(item);
     }
