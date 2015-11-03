@@ -2,6 +2,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.android.alces.androidclass.ActiveRoom">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
+
+    <item
+        android:title="Back"
+        android:id="@+id/action_back"
+        android:icon="@drawable/ic_back"
+        app:showAsAction="always"/>
+
+    <item
+        android:title="Edit Frequency"
+        android:id="@+id/action_edit"
+        android:icon="@drawable/ic_edit"
+        app:showAsAction="ifRoom"/>
+
 </menu>

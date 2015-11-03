@@ -12,6 +12,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -36,7 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class ActiveRoom extends Activity {
+public class ActiveRoom extends AppCompatActivity {
 
     Room thisRoom = null;
     private com.github.nkzawa.socketio.client.Socket mSocket = Global.globalSocket;
@@ -83,6 +85,7 @@ public class ActiveRoom extends Activity {
             finish();
         }
 
+        /*
         Button settingsButton = (Button) findViewById(R.id.active_button_edit);
 
         settingsButton.setVisibility(Global._user.roomOwner ? View.VISIBLE : View.INVISIBLE);
@@ -95,6 +98,7 @@ public class ActiveRoom extends Activity {
                 startActivityForResult(activity, 1);
             }
         });
+        */
 
         pttButton = (Button) findViewById(R.id.active_button_ptt);
         pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
@@ -133,9 +137,7 @@ public class ActiveRoom extends Activity {
 //                            (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 //                    imm.hideSoftInputFromWindow(etChat.getWindowToken(), 0);
                     return true;
-                }
-                else
-                {
+                } else {
                     int i = 0;
                 }
                 return false;
@@ -146,6 +148,9 @@ public class ActiveRoom extends Activity {
         mSocket.on("room_users_change", roomContentChange);
         mSocket.on("new_message", roomNewMessage);
         mSocket.emit("request_all_users_room", "empty");
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
     }
 
     @Override
@@ -163,7 +168,7 @@ public class ActiveRoom extends Activity {
         }
 
         mSocket.off("broadcast", recieveBroadcast);
-        mSocket.off("room_users_change",roomContentChange);
+        mSocket.off("room_users_change", roomContentChange);
         mSocket.off("new_message", roomNewMessage);
 
         Global._user.resetRoom();
@@ -172,6 +177,7 @@ public class ActiveRoom extends Activity {
         Intent intent = new Intent();
         intent.putExtra("payload", "this is pointless kek");
         setResult(RESULT_OK, intent);
+
         finish();
     }
 
@@ -193,6 +199,9 @@ public class ActiveRoom extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_active_room, menu);
+
+        menu.findItem(R.id.action_edit).setVisible((Global._user.roomOwner ? true : false));
+
         return true;
     }
 
@@ -203,9 +212,21 @@ public class ActiveRoom extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id)
+        {
+            case R.id.action_back:
+            {
+                finish();
+                return true;
+            }
+
+            case R.id.action_edit:
+            {
+                Intent activity = new Intent(ActiveRoom.this, RoomEditActivity.class);
+                activity.putExtra("payload", new Gson().toJson(thisRoom));
+                startActivityForResult(activity, 1);
+                return true;
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -421,7 +442,7 @@ public class ActiveRoom extends Activity {
             }
             else if (msg.what == 2)
             {
-                messages.add(new ChatMessage((JSONObject)msg.obj));
+                messages.add(new ChatMessage((JSONObject) msg.obj));
                 messageAdapter = new ArrayAdapter<ChatMessage>(getBaseContext(),
                         android.R.layout.simple_list_item_1,
                         messages);

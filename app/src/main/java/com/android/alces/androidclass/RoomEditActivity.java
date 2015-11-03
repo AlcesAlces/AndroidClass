@@ -11,6 +11,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,7 +28,7 @@ import com.google.gson.Gson;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class RoomEditActivity extends Activity {
+public class RoomEditActivity extends AppCompatActivity {
     Room thisRoom = null;
     private com.github.nkzawa.socketio.client.Socket mSocket = Global.globalSocket;
     ProgressDialog dialog;
@@ -104,6 +106,9 @@ public class RoomEditActivity extends Activity {
         mSocket.on("refuse_update_room", onEditActivityFailure);
         mSocket.on("refuse_delete_room", onEditActivityFailure);
         mSocket.on("success_delete_room", onDeleteSuccess);
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
     }
 
     @Override
@@ -121,6 +126,9 @@ public class RoomEditActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_active_room, menu);
+
+        menu.findItem(R.id.action_edit).setVisible(false);
+
         return true;
     }
 
@@ -131,9 +139,13 @@ public class RoomEditActivity extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id)
+        {
+            case R.id.action_back:
+            {
+                finish();
+                return true;
+            }
         }
 
         return super.onOptionsItemSelected(item);

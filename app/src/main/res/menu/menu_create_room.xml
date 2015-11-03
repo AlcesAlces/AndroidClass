@@ -1,11 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.android.alces.androidclass.Register">
+    tools:context="com.android.alces.androidclass.CreateRoomActivity">
 
     <item
         android:title="Back"
         android:id="@+id/action_back"
         android:icon="@drawable/ic_back"
         app:showAsAction="always"/>
+
 </menu>

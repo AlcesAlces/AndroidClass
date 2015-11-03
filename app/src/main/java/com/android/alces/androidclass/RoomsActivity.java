@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
@@ -29,7 +31,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class RoomsActivity extends Activity {
+public class RoomsActivity extends AppCompatActivity {
 
     private Socket mSocket = Global.globalSocket;
     private ListView lv;
@@ -37,6 +39,7 @@ public class RoomsActivity extends Activity {
     ProgressDialog dialog;
     private Room attempt = null;
     Timeout timerThread;
+    private TextView numberOfRooms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +53,12 @@ public class RoomsActivity extends Activity {
         getAllRooms();
 
 
-        Button createButton = (Button) findViewById(R.id.btnCreateRooms);
-        Button refresh = (Button) findViewById(R.id.btnRefreshRooms);
 
+
+        //Button createButton = (Button) findViewById(R.id.btnCreateRooms);
+        //Button refresh = (Button) findViewById(R.id.btnRefreshRooms);
+
+        /*
         createButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,6 +66,7 @@ public class RoomsActivity extends Activity {
                 RoomsActivity.this.startActivityForResult(myIntent, 1);
             }
         });
+        */
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -68,16 +75,22 @@ public class RoomsActivity extends Activity {
             }
         });
 
+        /*
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getAllRooms();
             }
         });
+        */
+
         //TODO: Is this depreciated
         mSocket.off("server error", serverError);
         mSocket.on("all rooms", displayAllRooms);
         mSocket.on("join_success", joinSuccess);
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
     }
 
     @Override
@@ -103,9 +116,26 @@ public class RoomsActivity extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id)
+        {
+            case R.id.action_back:
+            {
+                finish();
+                return true;
+            }
+
+            case R.id.action_refresh:
+            {
+                getAllRooms();
+                return true;
+            }
+
+            case R.id.action_create:
+            {
+                Intent myIntent = new Intent(RoomsActivity.this, CreateRoomActivity.class);
+                RoomsActivity.this.startActivityForResult(myIntent, 1);
+                return true;
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -272,6 +302,12 @@ public class RoomsActivity extends Activity {
                         listItems);
 
                 lv.setAdapter(adapter);
+
+                numberOfRooms = (TextView)findViewById(R.id.rooms_textView_number);
+
+                int number = lv.getAdapter().getCount();
+
+                numberOfRooms.setText(number + " Available Frequencies");
             }
             //Reauth message
             else if (msg.what == 1) {
