@@ -6,6 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioRecord;
+import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Environment;
@@ -15,6 +19,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -63,6 +68,7 @@ public class ActiveRoom extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_active_room);
 
+        setupRecieve();
         Global._currentHandler = handler;
         lvUsers = (ListView) findViewById(R.id.active_list_users);
         lvChat = (ListView) findViewById(R.id.active_list_chat);
@@ -108,7 +114,9 @@ public class ActiveRoom extends AppCompatActivity {
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
                         //Start action
-                        startRecording();
+                        status = true;
+                        startStreaming();
+                        //startRecording();
                         pttButton.setBackgroundColor(Color.GREEN);
                         //pttButton.getBackground().setColorFilter(Color.parseColor("GREEN"), PorterDuff.Mode.MULTIPLY);
                         break;
@@ -116,10 +124,13 @@ public class ActiveRoom extends AppCompatActivity {
                     case MotionEvent.ACTION_OUTSIDE:
                     case MotionEvent.ACTION_CANCEL:
                         //Stop action
-                        stopRecording();
+                        status = false;
+                        status2 = false;
+                        recorder.release();
+                        //stopRecording();
                         pttButton.setBackgroundColor(Color.RED);
                         //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
-                        sendMessage();
+                        //sendMessage();
                         break;
                 }
                 return true;
@@ -144,7 +155,7 @@ public class ActiveRoom extends AppCompatActivity {
             }
         });
 
-        mSocket.on("broadcast", recieveBroadcast);
+        mSocket.on("broadcast", getBroadcastPart);
         mSocket.on("room_users_change", roomContentChange);
         mSocket.on("new_message", roomNewMessage);
         mSocket.emit("request_all_users_room", "empty");
@@ -167,7 +178,7 @@ public class ActiveRoom extends AppCompatActivity {
             //TODO: handle error
         }
 
-        mSocket.off("broadcast", recieveBroadcast);
+        mSocket.off("broadcast", getBroadcastPart);
         mSocket.off("room_users_change", roomContentChange);
         mSocket.off("new_message", roomNewMessage);
 
@@ -388,6 +399,88 @@ public class ActiveRoom extends AppCompatActivity {
         }
     };
 
+    AudioRecord recorder;
+    boolean status = false;
+
+    //Audio Configuration.
+    private int sampleRate = 8000;      //How much will be ideal?
+    private int channelConfig = AudioFormat.CHANNEL_IN_DEFAULT;
+    private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
+
+    public void startStreaming() {
+
+
+        Thread streamThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+
+                int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
+
+                byte[] buffer = new byte[minBufSize];
+
+                Log.d("VS", "Buffer created of size " + minBufSize);
+
+                //final InetAddress destination = InetAddress.getByName(target.getText().toString());
+                Log.d("VS", "Address retrieved");
+
+
+                recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,sampleRate,channelConfig,audioFormat,minBufSize);
+                Log.d("VS", "Recorder initialized");
+
+                recorder.startRecording();
+
+
+                while(status == true) {
+
+
+                    //reading data from MIC into buffer
+                    minBufSize = recorder.read(buffer, 0, buffer.length);
+
+                    //String toSend = Base64.encodeToString(buffer, 0);
+                    mSocket.emit("broadcast", buffer);
+                }
+            }
+
+        });
+        streamThread.start();
+    }
+
+    private boolean status2 = true;
+    private AudioTrack speaker;
+    byte[] spBuffer = new byte[256];
+    int minBufSize;
+
+    public void setupRecieve()
+    {
+        //minimum buffer size. need to be careful. might cause problems. try setting manually if any problems faced
+        minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
+
+        speaker = new AudioTrack(AudioManager.STREAM_MUSIC,sampleRate,channelConfig,audioFormat,minBufSize, AudioTrack.MODE_STREAM);
+
+        speaker.play();
+    }
+
+    private Emitter.Listener getBroadcastPart = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+
+            //String encoded;
+            byte[] encoded;
+            try {
+                //encoded  = data.getString("payload");
+                encoded = (byte[])data.get("payload");
+            } catch (JSONException e) {
+                return;
+            }
+            Message msg = handler.obtainMessage();
+            msg.obj = encoded;
+            msg.what = 0;
+            handler.sendMessage(msg);
+        }
+    };
+
     Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -400,23 +493,8 @@ public class ActiveRoom extends AppCompatActivity {
             }
             if(msg.what == 0)
             {
-                //TODO: Hack solution for testing
-                String encoded = (String)msg.obj;
-                encoded = encoded.trim().replaceAll("\n", "");
-                byte[] decode = Base64.decode(encoded,0);
-                //File outputFile = new File(mFileName);
-
-                try {
-
-                    //Files.write(decode, outputFile);
-                    Support.Files.saveFileFromBytes(decode, mFileName);
-                }
-                catch(Exception ex)
-                {
-
-                }
-
-                startPlaying();
+                spBuffer = (byte[])msg.obj;
+                speaker.write(spBuffer, 0, minBufSize);
             }
             if(msg.what == 1)
             {

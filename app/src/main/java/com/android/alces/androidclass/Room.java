@@ -22,6 +22,7 @@ public class Room {
     public boolean isPrivate;
     public RangeInfo rangeInfo;
     public int numUsers;
+    public boolean isHeader = false;
 
     //TODO: Going to add another property to check for who is in the room
 
@@ -41,6 +42,12 @@ public class Room {
         {
 
         }
+    }
+
+    //Dummy
+    public Room()
+    {
+        isHeader = true;
     }
 
     @Override
