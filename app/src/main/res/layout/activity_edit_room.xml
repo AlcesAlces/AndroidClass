@@ -9,8 +9,7 @@
     android:weightSum="1"
     android:descendantFocusability="beforeDescendants"
     android:focusableInTouchMode="true"
-    android:background="@drawable/bg_edit"
-    android:backgroundTint="#b4dfda">
+    android:background="@drawable/bg_edit">
 
     <LinearLayout
         android:orientation="vertical"
