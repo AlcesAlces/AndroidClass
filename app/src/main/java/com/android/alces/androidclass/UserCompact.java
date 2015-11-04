@@ -4,8 +4,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class UserCompact {
-    private String name;
-    private String id;
+    public String name;
+    public String id;
+    public boolean broadcasting = false;
 
     public UserCompact(String _name, String _id)
     {
