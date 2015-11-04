@@ -6,7 +6,9 @@
     tools:context="com.android.alces.androidclass.Register"
     android:orientation="vertical"
     android:descendantFocusability="beforeDescendants"
-    android:focusableInTouchMode="true">
+    android:focusableInTouchMode="true"
+    android:background="@drawable/bg_register"
+    android:backgroundTint="#b4dfda">
 
 
     <LinearLayout
@@ -29,14 +31,18 @@
         android:layout_height="fill_parent"
         android:layout_width="fill_parent"
         android:orientation="vertical"
-        android:layout_weight=".6">
+        android:layout_weight=".6"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="10dp">
 
         <EditText
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:id="@+id/etUsernameRegister"
             android:hint="User Name"
-            android:layout_weight=".5"/>
+            android:layout_weight=".5"
+            android:background="#c8ffffff" />
 
         <EditText
             android:layout_width="fill_parent"
@@ -44,14 +50,18 @@
             android:inputType="textPassword"
             android:id="@+id/etPasswordRegister"
             android:hint="Password"
-            android:layout_weight=".5"/>
+            android:layout_weight=".5"
+            android:layout_marginTop="5dp"
+            android:background="#c8ffffff" />
 
         <EditText
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:id="@+id/etEmailRegister"
             android:hint="Email"
-            android:layout_weight=".5"/>
+            android:layout_weight=".5"
+            android:layout_marginTop="5dp"
+            android:background="#c8ffffff" />
 
     </LinearLayout>
 
@@ -59,7 +69,10 @@
         android:layout_height="fill_parent"
         android:layout_width="fill_parent"
         android:orientation="horizontal"
-        android:layout_weight=".6">
+        android:layout_weight=".6"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp">
 
         <Button
             android:layout_width="fill_parent"

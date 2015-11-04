@@ -7,7 +7,9 @@
     tools:context=".MainActivity"
     android:weightSum="1"
     android:descendantFocusability="beforeDescendants"
-    android:focusableInTouchMode="true">
+    android:focusableInTouchMode="true"
+    android:background="@drawable/bg_main"
+    android:backgroundTint="#b4dfda">
 
     <LinearLayout
         android:orientation="vertical"
@@ -31,7 +33,9 @@
         android:layout_height="130dp"
         android:layout_width="fill_parent"
         android:orientation="vertical"
-        android:layout_weight="0.25">
+        android:layout_weight="0.25"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -39,13 +43,16 @@
             android:text="Welcome!"
             android:id="@+id/tvLoginWelcome"
             android:layout_gravity="center"
-            android:textSize="24sp"/>
+            android:textSize="24sp"
+            android:layout_marginTop="5dp"
+            android:background="#c8ffffff" />
 
         <EditText
             android:layout_width="fill_parent"
             android:layout_height="61dp"
             android:id="@+id/editText"
-            android:hint="User Name" />
+            android:hint="User Name"
+            android:background="#c8ffffff" />
 
         <EditText
             android:layout_width="fill_parent"
@@ -53,7 +60,9 @@
             android:inputType="textPassword"
             android:id="@+id/editText2"
             android:hint="Password"
-            android:layout_below="@+id/editText" />
+            android:layout_below="@+id/editText"
+            android:background="#c8ffffff"
+            android:layout_marginTop="5dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -66,7 +75,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Log in"
-            android:id="@+id/button"/>
+            android:id="@+id/button" />
 
     </LinearLayout>
 
@@ -83,10 +92,12 @@
             android:id="@+id/tvLoginAccount"
             android:layout_above="@+id/button"
             android:layout_alignLeft="@+id/editText2"
-            android:layout_alignStart="@+id/editText2" />
+            android:layout_alignStart="@+id/editText2"
+            android:background="#c8ffffff"
+            android:layout_marginBottom="10dp" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="144dp"
             android:layout_height="wrap_content"
             android:text="Create Account"
             android:id="@+id/button2"

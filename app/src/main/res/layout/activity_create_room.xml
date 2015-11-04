@@ -6,7 +6,9 @@
     android:layout_height="match_parent"
     android:weightSum="1"
     android:descendantFocusability="beforeDescendants"
-    android:focusableInTouchMode="true">
+    android:focusableInTouchMode="true"
+    android:background="@drawable/bg_create"
+    android:backgroundTint="#b4dfda">
 
     <LinearLayout
         android:orientation="vertical"
@@ -28,7 +30,11 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal">
+        android:layout_gravity="center_horizontal"
+        android:layout_marginRight="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:background="#c8ffffff">
 
         <EditText
             android:layout_width="match_parent"
@@ -42,7 +48,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="0.05">
+        android:layout_weight="0.05"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="25dp"
+        android:background="#c8ffffff">
 
         <CheckBox
             android:layout_width="wrap_content"
@@ -63,14 +73,18 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_weight="0.17"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:layout_marginTop="20dp">
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/create_editText_frange"
             android:hint="Frequency Range"
-            android:layout_weight="0.39" />
+            android:layout_weight="0.39"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:background="#c8ffffff" />
     </LinearLayout>
 
     <LinearLayout
@@ -78,10 +92,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="0.11">
+        android:layout_weight="0.11"
+        android:layout_marginTop="20dp">
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="157dp"
             android:layout_height="wrap_content"
             android:text="Create Frequency"
             android:id="@+id/create_button_create"

@@ -6,7 +6,9 @@
     tools:context="com.android.alces.androidclass.RoomsActivity"
     android:orientation="vertical"
     android:descendantFocusability="beforeDescendants"
-    android:focusableInTouchMode="true">
+    android:focusableInTouchMode="true"
+    android:background="@drawable/bg_rooms"
+    android:backgroundTint="#b4dfda">
 
     <LinearLayout
         android:orientation="vertical"
@@ -35,7 +37,8 @@
             android:id="@+id/roomsListView"
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"
+            android:background="#c8ffffff" />
 
     </LinearLayout>
 
@@ -52,7 +55,8 @@
             android:text="dummy"
             android:id="@+id/rooms_textView_number"
             android:layout_marginTop="25dp"
-            android:layout_marginLeft="15dp" />
+            android:layout_marginLeft="15dp"
+            android:background="#c8ffffff" />
     </LinearLayout>
 
 </LinearLayout>

@@ -8,7 +8,9 @@
     tools:context=".RoomEditActivity"
     android:weightSum="1"
     android:descendantFocusability="beforeDescendants"
-    android:focusableInTouchMode="true">
+    android:focusableInTouchMode="true"
+    android:background="@drawable/bg_edit"
+    android:backgroundTint="#b4dfda">
 
     <LinearLayout
         android:orientation="vertical"
@@ -31,7 +33,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.03"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="2dp"
+        android:background="#c8ffffff">
 
         <EditText
             android:layout_width="match_parent"
@@ -46,7 +52,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_weight="0.08"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="2dp"
+        android:background="#c8ffffff">
 
         <CheckBox
             android:layout_width="wrap_content"
@@ -66,7 +76,11 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.08">
+        android:layout_weight="0.08"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="2dp"
+        android:background="#c8ffffff">
 
         <EditText
             android:layout_width="match_parent"
@@ -81,7 +95,10 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="2dp">
 
         <Button
             android:layout_width="146dp"
@@ -96,7 +113,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.06"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="2dp"
+        android:background="#c8ffffff">
 
         <TextView
             android:layout_width="wrap_content"
@@ -120,7 +141,11 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.08">
+        android:layout_weight="0.08"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="2dp"
+        android:background="#c8ffffff">
 
         <EditText
             android:layout_width="match_parent"
@@ -133,7 +158,11 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="2dp"
+        android:background="#c8ffffff">
 
         <EditText
             android:layout_width="match_parent"
@@ -147,26 +176,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.10"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="2dp">
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="165dp"
             android:layout_height="wrap_content"
             android:text="Disband Frequency"
             android:id="@+id/edit_button_disband" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.14">
 
         <Button
             android:layout_width="165dp"
             android:layout_height="wrap_content"
             android:text="Update Frequency"
-            android:id="@+id/edit_button_update" />
+            android:id="@+id/edit_button_update"
+            android:layout_marginTop="2dp" />
     </LinearLayout>
 
 </LinearLayout>
