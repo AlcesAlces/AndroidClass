@@ -37,13 +37,6 @@
                 android:textSize="24sp"
                 android:layout_gravity="center"/>
 
-            Button
-                android:layout_width="wrap_content"
-                android:layout_height="33dp"
-                android:text="Freq Settings"
-                android:id="@+id/active_button_edit"
-                android:layout_gravity="center"/>
-
         </LinearLayout>
 
     <LinearLayout
@@ -53,11 +46,14 @@
         android:layout_weight=".9"
         android:weightSum="1">
 
-        <ListView
+        <GridView
             android:layout_width="fill_parent"
             android:layout_height="105dp"
             android:id="@+id/active_list_users"
-            android:layout_weight="0.66" />
+            android:layout_weight="0.66"
+            android:columnWidth="100dp"
+            android:stretchMode="columnWidth"
+            android:numColumns="auto_fit"/>
 
         <ListView
             android:layout_width="fill_parent"
@@ -72,11 +68,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="1.6">
+        android:layout_weight="1.6"
+        android:focusable="false">
 
         <Button
             android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
             android:text="PTT"
             android:id="@+id/active_button_ptt"
             android:layout_gravity="center_horizontal"
@@ -84,11 +81,9 @@
 
         <EditText
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="64dp"
             android:id="@+id/active_editText_message"
-            android:hint="Send Message"
-            android:layout_weight="1"
-            />
+            android:hint="Send Message" />
     </LinearLayout>
 
 </LinearLayout>

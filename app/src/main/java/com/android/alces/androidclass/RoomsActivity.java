@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.alces.adapters.RoomsAdapter;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
 import com.google.gson.Gson;
@@ -35,7 +36,7 @@ public class RoomsActivity extends AppCompatActivity {
 
     private Socket mSocket = Global.globalSocket;
     private ListView lv;
-    private ArrayAdapter<Room> adapter;
+    private RoomsAdapter adapter;
     ProgressDialog dialog;
     private Room attempt = null;
     Timeout timerThread;
@@ -51,10 +52,6 @@ public class RoomsActivity extends AppCompatActivity {
         lv = (ListView) findViewById(R.id.roomsListView);
 
         getAllRooms();
-
-
-
-
         //Button createButton = (Button) findViewById(R.id.btnCreateRooms);
         //Button refresh = (Button) findViewById(R.id.btnRefreshRooms);
 
@@ -169,22 +166,22 @@ public class RoomsActivity extends AppCompatActivity {
     {
         Room lvi = (Room)lv.getItemAtPosition(position);
         attempt = lvi;
-        JSONObject json = new JSONObject();
-        try {
-            json.put("roomId", lvi.roomId);
-        }
-        catch(JSONException ex)
-        {
-            //TODO: handle error
-        }
+        if(!lvi.isHeader) {
+            JSONObject json = new JSONObject();
+            try {
+                json.put("roomId", lvi.roomId);
+            } catch (JSONException ex) {
+                //TODO: handle error
+            }
 
-        //TODO: Handle this fully.
-        mSocket.emit("join_room", json);
+            //TODO: Handle this fully.
+            mSocket.emit("join_room", json);
 
-        dialog = new ProgressDialog(this);
-        dialog.setMessage("Joining. Please wait....");
-        dialog.setIndeterminate(true);
-        dialog.show();
+            dialog = new ProgressDialog(this);
+            dialog.setMessage("Joining. Please wait....");
+            dialog.setIndeterminate(true);
+            dialog.show();
+        }
     }
 
     private Emitter.Listener displayAllRooms = new Emitter.Listener() {
@@ -284,8 +281,11 @@ public class RoomsActivity extends AppCompatActivity {
             }
 
             if (msg.what == 0) {
+
                 JSONArray tempJson = (JSONArray) msg.obj;
+
                 ArrayList<Room> listItems = new ArrayList<>();
+                listItems.add(new Room());
 
                 for (int i = 0; i < tempJson.length(); i++) {
                     try {
@@ -297,17 +297,15 @@ public class RoomsActivity extends AppCompatActivity {
 
                 //TODO: Sort listItems. Java doesn't have built in stuff so may have to write custom.
 
-                adapter = new ArrayAdapter<Room>(getBaseContext(),
-                        android.R.layout.simple_list_item_1,
-                        listItems);
+                adapter = new RoomsAdapter(RoomsActivity.this, listItems);
 
                 lv.setAdapter(adapter);
 
                 numberOfRooms = (TextView)findViewById(R.id.rooms_textView_number);
 
                 int number = lv.getAdapter().getCount();
-
-                numberOfRooms.setText(number + " Available Frequencies");
+                //number - 1 because the fake header counts as an item.
+                numberOfRooms.setText( (number - 1) + " Available Frequencies");
             }
             //Reauth message
             else if (msg.what == 1) {
