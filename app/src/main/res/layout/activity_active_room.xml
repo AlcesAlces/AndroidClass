@@ -49,12 +49,11 @@
         android:layout_weight=".9"
         android:weightSum="1">
 
-        <GridView
+        <ListView
             android:layout_width="fill_parent"
             android:layout_height="100dp"
             android:id="@+id/active_list_users"
             android:columnWidth="100dp"
-            android:stretchMode="columnWidth"
             android:numColumns="auto_fit"
             android:fadingEdge="vertical"
             android:background="#c8ffffff" />
