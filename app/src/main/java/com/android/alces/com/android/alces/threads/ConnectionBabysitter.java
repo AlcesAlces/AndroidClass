@@ -1,7 +1,9 @@
-package com.android.alces.androidclass;
+package com.android.alces.com.android.alces.threads;
 
 import android.os.Handler;
 import android.os.Message;
+
+import com.android.alces.androidclass.Global;
 
 public class ConnectionBabysitter extends Thread implements Runnable{
 

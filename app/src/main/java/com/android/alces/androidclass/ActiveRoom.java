@@ -1,10 +1,7 @@
 package com.android.alces.androidclass;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.AudioFormat;
@@ -26,7 +23,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -36,15 +32,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.alces.adapters.ChatAdapter;
+import com.android.alces.adapters.UsersAdapter;
+import com.android.alces.com.android.alces.threads.Timeout;
 import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.engineio.client.Socket;
 import com.google.gson.Gson;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 
 public class ActiveRoom extends AppCompatActivity {
@@ -56,10 +52,10 @@ public class ActiveRoom extends AppCompatActivity {
     String mFileName;
     private MediaRecorder mRecorder = null;
     private MediaPlayer mPlayer = null;
-    private ArrayAdapter<UserCompact> userAdapter;
+    private UsersAdapter userAdapter;
     private ChatAdapter messageAdapter;
     private ArrayList<ChatMessage> messages = new ArrayList<>();
-    private GridView lvUsers;
+    private ListView lvUsers;
     private ListView lvChat;
     Button pttButton;
     EditText etChat;
@@ -73,7 +69,7 @@ public class ActiveRoom extends AppCompatActivity {
         setContentView(R.layout.activity_active_room);
         setupRecieve();
         Global._currentHandler = handler;
-        lvUsers = (GridView) findViewById(R.id.active_list_users);
+        lvUsers = (ListView) findViewById(R.id.active_list_users);
         lvChat = (ListView) findViewById(R.id.active_list_chat);
         mFileName = getApplicationInfo().dataDir += "/audiorecordtest.mp4";
         fileChecks();
@@ -118,6 +114,7 @@ public class ActiveRoom extends AppCompatActivity {
                     case MotionEvent.ACTION_DOWN:
                         //Start action
                         status = true;
+                        setSelfBroadcasting(true);
                         startStreaming();
                         //startRecording();
                         pttButton.setBackgroundColor(Color.GREEN);
@@ -130,6 +127,7 @@ public class ActiveRoom extends AppCompatActivity {
                         status = false;
                         status2 = false;
                         recorder.release();
+                        setSelfBroadcasting(false);
                         //stopRecording();
                         pttButton.setBackgroundColor(Color.RED);
                         //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
@@ -246,90 +244,49 @@ public class ActiveRoom extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void setUserBroadcasting()
+    {
+
+    }
+
+    private void setSelfBroadcasting(boolean set)
+    {
+        //broadcasting
+        if(set)
+        {
+            ArrayList<UserCompact> users = userAdapter.data;
+
+            for(UserCompact uc : users)
+            {
+                if(uc.name.equals(Global._user.name))
+                {
+                    uc.broadcasting = true;
+                }
+            }
+
+            userAdapter = new UsersAdapter(ActiveRoom.this, users);
+            lvUsers.setAdapter(userAdapter);
+        }
+        else
+        {
+            ArrayList<UserCompact> users = userAdapter.data;
+
+            for(UserCompact uc : users)
+            {
+                if(uc.name.equals(Global._user.name))
+                {
+                    uc.broadcasting = false;
+                }
+            }
+            userAdapter = new UsersAdapter(ActiveRoom.this, users);
+
+            lvUsers.setAdapter(userAdapter);
+        }
+    }
+
     private void fileChecks()
     {
-//        try {
-//            File temp = new File(mFileName);
-//            if (!temp.exists()) {
-//                temp.createNewFile();
-//            }
-//        }
-//        catch(IOException ex)
-//        {
-//            mFileName = Environment.getExternalStorageDirectory().toString() + "/audiorecordtest.mp4";
-//            //Can't access that file. D:
-//        }
         mFileName = Environment.getExternalStorageDirectory().toString() + "/audiorecordtest.mp4";
-    }
-
-    private void startRecording() {
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mRecorder.setOutputFile(mFileName);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-        try {
-            mRecorder.prepare();
-            mRecorder.start();
-        } catch (IOException e) {
-            Toast.makeText(ActiveRoom.this, "DEBUG" + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void stopRecording()
-    {
-        try {
-            Thread.sleep(100);
-        }
-        catch(InterruptedException ex) {
-            //TODO: D:
-        }
-        mRecorder.stop();
-        mRecorder.release();
-        mRecorder = null;
-    }
-
-    private void startPlaying()
-    {
-        mPlayer = new MediaPlayer();
-        try
-        {
-            mPlayer.setDataSource(mFileName);
-            mPlayer.prepare();
-            mPlayer.start();
-        }
-        catch(IOException ex)
-        {
-            Toast.makeText(ActiveRoom.this, "IO Exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void stoPlaying()
-    {
-        mPlayer.release();
-        mPlayer = null;
-    }
-
-    private void sendMessage()
-    {
-        File outputFile = new File(mFileName);
-        try {
-            //byte[] toEncode = Files.toByteArray(outputFile);
-            byte[] toEncode = Support.Files.toByteArray(outputFile);
-            //This shit is REALLY slow
-            //String encode = BaseEncoding.base64().encode(toEncode);
-            String encode = Base64.encodeToString(toEncode, 0);
-            mSocket.emit("broadcast", encode);
-        }
-        catch(IOException ex)
-        {
-
-        }
-        catch(Exception ex)
-        {
-            int i = 0;
-        }
     }
 
     private void sendChat(String message)
@@ -338,27 +295,6 @@ public class ActiveRoom extends AppCompatActivity {
         mSocket.emit("new_message", toSend.toJson());
         etChat.setText("");
     }
-
-    private Emitter.Listener recieveBroadcast = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            JSONObject data = (JSONObject) args[0];
-
-            String user;
-            String payload;
-            try {
-                user = data.getString("user");
-                payload = data.getString("payload");
-            } catch (JSONException e) {
-                return;
-            }
-
-            Message msg = handler.obtainMessage();
-            msg.what = 0;
-            msg.obj = payload;
-            handler.sendMessage(msg);
-        }
-    };
 
     private Emitter.Listener roomContentChange = new Emitter.Listener() {
         @Override
@@ -515,9 +451,7 @@ public class ActiveRoom extends AppCompatActivity {
                     }
                 }
 
-                userAdapter = new ArrayAdapter<UserCompact>(getBaseContext(),
-                        android.R.layout.simple_list_item_1,
-                        listItems);
+                userAdapter = new UsersAdapter(ActiveRoom.this, listItems);
 
                 lvUsers.setAdapter(userAdapter);
             }

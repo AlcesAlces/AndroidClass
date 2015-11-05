@@ -6,25 +6,27 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.alces.androidclass.R;
 import com.android.alces.androidclass.Room;
+import com.android.alces.androidclass.UserCompact;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class RoomsAdapter extends BaseAdapter{
+public class UsersAdapter extends BaseAdapter{
 
     private Activity activity;
-    private ArrayList<Room> data;
+    public ArrayList<UserCompact> data;
     private static LayoutInflater inflater = null;
 
-    public RoomsAdapter(Activity a, ArrayList<Room> d)
+    public UsersAdapter(Activity a, ArrayList<UserCompact> d)
     {
         activity = a;
         data = d;
         inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
     }
 
     public int getCount()
@@ -47,22 +49,22 @@ public class RoomsAdapter extends BaseAdapter{
         View vi = convertView;
         if(convertView == null)
         {
-            vi = inflater.inflate(R.layout.custom_list_item, null);
+            vi = inflater.inflate(R.layout.custom_list_users, null);
         }
 
-        TextView tvName = (TextView) vi.findViewById(R.id.tvCustomListName);
-        TextView tvNumber = (TextView) vi.findViewById(R.id.tvCustomListNumber);
+        TextView tvName = (TextView) vi.findViewById(R.id.tvCustomUsersName);
+        ImageView iv = (ImageView)vi.findViewById(R.id.clUsersImage);
+        tvName.setText(data.get(position).name, TextView.BufferType.NORMAL);
 
-        if((data.get(position).isHeader))
+        if(data.get(position).broadcasting)
         {
-            tvName.setText("Room Name", TextView.BufferType.NORMAL);
-            tvNumber.setText("Users", TextView.BufferType.NORMAL);
+            iv.setImageResource(R.drawable.is_broadcast);
         }
         else
         {
-            tvName.setText(data.get(position).name, TextView.BufferType.NORMAL);
-            tvNumber.setText("" + data.get(position).numUsers, TextView.BufferType.NORMAL);
+            iv.setImageResource(R.drawable.not_broadcast);
         }
         return vi;
     }
+
 }
