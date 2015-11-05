@@ -68,5 +68,24 @@ public class Support {
 
             return toReturn;
         }
+
+        public static void setAllNotBroadcasting(ArrayList<UserCompact> users)
+        {
+            for(UserCompact uc : users)
+            {
+                uc.broadcasting = false;
+            }
+        }
+
+        public static void setBroadcasterById(ArrayList<UserCompact> users, String id)
+        {
+            for(UserCompact uc : users)
+            {
+                if(uc.id.equals(id))
+                {
+                    uc.broadcasting = true;
+                }
+            }
+        }
     }
 }

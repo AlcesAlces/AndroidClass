@@ -5,8 +5,9 @@ import android.os.Message;
 
 public class BroadcastTimer extends Thread implements Runnable{
 
-    int timeoutTime = 10000;
+    int timeoutTime = 1500;
     Handler handler;
+    public Boolean finished = false;
 
     public BroadcastTimer(Handler handle)
     {
@@ -32,8 +33,9 @@ public class BroadcastTimer extends Thread implements Runnable{
         if(!this.isInterrupted()) {
 
             Message msg = handler.obtainMessage();
-            msg.what = 3;
+            msg.what = 4;
             handler.sendMessage(msg);
+            finished = true;
         }
     }
 }
