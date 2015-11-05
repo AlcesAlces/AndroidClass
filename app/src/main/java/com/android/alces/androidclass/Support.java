@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 
 public class Support {
 
@@ -47,6 +48,25 @@ public class Support {
                 Global.globalSocket.connect();
             }
 
+        }
+    }
+
+    public static class Users
+    {
+        public static UserCompact findUserByName(String name, ArrayList<UserCompact> users)
+        {
+
+            UserCompact toReturn = null;
+
+            for(UserCompact uc : users)
+            {
+                if(name.toLowerCase().equals(uc.name.toLowerCase()))
+                {
+                    toReturn = uc.makeClone();
+                }
+            }
+
+            return toReturn;
         }
     }
 }

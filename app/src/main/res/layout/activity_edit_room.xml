@@ -146,10 +146,10 @@
         android:layout_marginTop="2dp"
         android:background="#c8ffffff">
 
-        <EditText
+        <AutoCompleteTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/edit_editText_addUser"
+            android:id="@+id/edit_auto_addUser"
             android:layout_weight="1"
             android:hint="Add User to Frequency" />
     </LinearLayout>
@@ -163,10 +163,10 @@
         android:layout_marginTop="2dp"
         android:background="#c8ffffff">
 
-        <EditText
+        <AutoCompleteTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/edit_editText_removeUser"
+            android:id="@+id/edit_auto_removeUser"
             android:hint="Remove User From Frequency" />
     </LinearLayout>
 

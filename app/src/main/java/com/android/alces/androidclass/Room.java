@@ -4,11 +4,16 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+import android.util.Log;
 
 import com.google.gson.JsonObject;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Each room needs to have enough information to identify them from the
@@ -23,8 +28,7 @@ public class Room {
     public RangeInfo rangeInfo;
     public int numUsers;
     public boolean isHeader = false;
-
-    //TODO: Going to add another property to check for who is in the room
+    public ArrayList<UserCompact> approvedUsers;
 
     //Create the room object from a JSONObject. Ezpz
     public Room(JSONObject inputJson)
@@ -37,10 +41,28 @@ public class Room {
                          == 0 ? false : true);
             rangeInfo = new RangeInfo(inputJson);
             numUsers = inputJson.getInt("numUsers");
+
+            //Parse permitted users
+            JSONArray tempArray = (JSONArray)inputJson.get("permittedUsers");
+            approvedUsers = new ArrayList<>();
+            for(int i = 0; i < tempArray.length(); i++)
+            {
+                try
+                {
+                    String name = tempArray.getJSONObject(i).getString("userName");
+                    String id = tempArray.getJSONObject(i).getString("userID");
+                    approvedUsers.add(new UserCompact(name,id));
+                }
+                catch(JSONException arrayEx)
+                {
+                    Log.d("VS", "Rooms threw error: " + arrayEx.getMessage());
+                }
+            }
+
         }
         catch(JSONException exception)
         {
-
+            Log.d("VS", "Rooms threw error: " + exception.getMessage());
         }
     }
 
@@ -94,13 +116,54 @@ public class Room {
             json.put("originLat", rangeInfo.lat);
             json.put("originLon", rangeInfo.lon);
 
+            //Build permitted users:
+            JSONArray permittedUsers = new JSONArray();
+            //Basically permittedUSers is an array full of JSONObjects.
+            for(UserCompact uc : approvedUsers)
+            {
+                JSONObject toAppend = new JSONObject();
+                toAppend.put("userID", uc.id);
+                toAppend.put("userName", uc.name);
+                permittedUsers.put(toAppend);
+            }
+
+            json.put("permittedUsers", permittedUsers);
         }
         catch(JSONException ex)
         {
-
+            Log.d("VS", "Tojson in Room threw error: " + ex.getMessage());
         }
 
         return json;
+    }
+
+    public void removeUser(UserCompact uc)
+    {
+        //Found this method online the iterator removes the need to check for going out of bounds.
+        for(Iterator<UserCompact> it = approvedUsers.iterator(); it.hasNext(); )
+        {
+            UserCompact user = it.next();
+            if(user.id.equals(uc.id))
+            {
+                it.remove();
+            }
+        }
+    }
+
+    public boolean isDuplicate(UserCompact uc)
+    {
+        boolean returnValue = false;
+        //Found this method online the iterator removes the need to check for going out of bounds.
+        for(Iterator<UserCompact> it = approvedUsers.iterator(); it.hasNext(); )
+        {
+            UserCompact user = it.next();
+            if(user.id.equals(uc.id))
+            {
+                returnValue = true;
+            }
+        }
+
+        return returnValue;
     }
 
 }

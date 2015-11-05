@@ -26,6 +26,11 @@ public class UserCompact {
         }
     }
 
+    public UserCompact makeClone()
+    {
+        return new UserCompact(name, id);
+    }
+
     @Override
     public String toString()
     {
