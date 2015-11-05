@@ -9,7 +9,7 @@ public class User {
     //String id  = null;
     public double lon;
     public double lat;
-    public String roomId = "nevergonnagiveyouup";
+    public String roomId = "-1";
     public boolean roomOwner = false;
 
     public User(String _name, double _lon, double _lat)
@@ -26,20 +26,12 @@ public class User {
             json.put("name", name);
             json.put("lat", lat);
             json.put("lon", lon);
-            if(roomId != "nevergonnagiveyouup")
-            {
-                json.put("roomId", roomId);
-            }
+            json.put("roomId", roomId);
         }
         catch(JSONException ex)
         {
         }
 
         return json;
-    }
-
-    public void resetRoom()
-    {
-        roomId = "nevergonnagiveyouup";
     }
 }
