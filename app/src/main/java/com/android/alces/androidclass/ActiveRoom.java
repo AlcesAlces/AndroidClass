@@ -51,8 +51,6 @@ public class ActiveRoom extends AppCompatActivity {
     ProgressDialog dialog;
     Timeout timerThread;
     String mFileName;
-    private MediaRecorder mRecorder = null;
-    private MediaPlayer mPlayer = null;
     private UsersAdapter userAdapter;
     private ChatAdapter messageAdapter;
     private ArrayList<ChatMessage> messages = new ArrayList<>();
@@ -74,8 +72,6 @@ public class ActiveRoom extends AppCompatActivity {
         Global._currentHandler = handler;
         lvUsers = (ListView) findViewById(R.id.active_list_users);
         lvChat = (ListView) findViewById(R.id.active_list_chat);
-        mFileName = getApplicationInfo().dataDir += "/audiorecordtest.mp4";
-        fileChecks();
 
         Bundle extras = getIntent().getExtras();
         //The bundle is a serialized json object with the Gson code.
@@ -166,6 +162,15 @@ public class ActiveRoom extends AppCompatActivity {
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+
+        //Debug statement that may be useful.
+//        pttButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                mSocket.emit("reauth", Global._user.toJson());
+//            }
+//        });
     }
 
     @Override
@@ -186,7 +191,7 @@ public class ActiveRoom extends AppCompatActivity {
         mSocket.off("room_users_change", roomContentChange);
         mSocket.off("new_message", roomNewMessage);
 
-        Global._user.resetRoom();
+        //Global._user.resetRoom();
         mSocket.emit("leave_room", json);
 
         Intent intent = new Intent();

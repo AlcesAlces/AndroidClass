@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
 
 public class ConnectionBabysitter extends Thread implements Runnable{
 
-    long startTimeout = 30000;
+    long startTimeout = 10000;
     Handler handler;
     boolean connecting = false;
 
