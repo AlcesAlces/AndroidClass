@@ -1,15 +1,14 @@
-package com.android.alces.androidclass;
+package com.android.alces.com.android.alces.threads;
 
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-public class Timeout extends Thread implements Runnable{
+public class BroadcastTimer extends Thread implements Runnable{
 
     int timeoutTime = 10000;
     Handler handler;
 
-    public Timeout(Handler handle)
+    public BroadcastTimer(Handler handle)
     {
         handler = handle;
     }
