@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import com.android.alces.adapters.ChatAdapter;
 import com.android.alces.adapters.UsersAdapter;
+import com.android.alces.com.android.alces.threads.BroadcastTimer;
 import com.android.alces.com.android.alces.threads.Timeout;
 import com.github.nkzawa.emitter.Emitter;
 import com.google.gson.Gson;
@@ -59,6 +60,8 @@ public class ActiveRoom extends AppCompatActivity {
     private ListView lvChat;
     Button pttButton;
     EditText etChat;
+    private BroadcastTimer broadcastTimer;
+    private Boolean canBroadcast = true;
 
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
      *at https://github.com/nkzawa/socket.io-android-chat this integrates the chat aswell.
@@ -244,9 +247,58 @@ public class ActiveRoom extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void setUserBroadcasting()
+    //Purpose here is to set your broadcast button based on your ability to broadcast
+    private void setBroadcastButtonStatus()
     {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
+                if(canBroadcast)
+                {
+                    //set reds & enable
+                    pttButton.setBackgroundColor(Color.RED);
+                    pttButton.setEnabled(true);
+                }
+                else
+                {
+                    //set gray and disable
+                    pttButton.setBackgroundColor(Color.GRAY);
+                    pttButton.setEnabled(false);
+                }
+            }
+        });
+
+    }
+
+    private void setUserBroadcasting(String id)
+    {
+        canBroadcast = false;
+        Support.Users.setBroadcasterById(userAdapter.data, id);
+        setBroadcastButtonStatus();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                userAdapter.notifyDataSetChanged();
+            }
+        });
+
+        if(broadcastTimer == null)
+        {
+            broadcastTimer = new BroadcastTimer(handler);
+            broadcastTimer.run();
+        }
+        else if(!broadcastTimer.finished)
+        {
+            broadcastTimer.interrupt();
+            broadcastTimer = new BroadcastTimer(handler);
+            broadcastTimer.run();
+        }
+        else
+        {
+            broadcastTimer = new BroadcastTimer(handler);
+            broadcastTimer.run();
+        }
     }
 
     private void setSelfBroadcasting(boolean set)
@@ -403,16 +455,24 @@ public class ActiveRoom extends AppCompatActivity {
     private Emitter.Listener getBroadcastPart = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
+
             JSONObject data = (JSONObject) args[0];
 
             //String encoded;
             byte[] encoded;
+            String id;
             try {
                 //encoded  = data.getString("payload");
                 encoded = (byte[])data.get("payload");
+                id = data.getString("id");
             } catch (JSONException e) {
                 return;
             }
+
+            //We're getting a broadcast that means we need to set the components properly.
+            setUserBroadcasting(id);
+
+
             Message msg = handler.obtainMessage();
             msg.obj = encoded;
             msg.what = 0;
@@ -430,6 +490,7 @@ public class ActiveRoom extends AppCompatActivity {
             } catch (Exception ex) {
 
             }
+            //Get broadcast.
             if(msg.what == 0)
             {
                 spBuffer = (byte[])msg.obj;
@@ -462,6 +523,20 @@ public class ActiveRoom extends AppCompatActivity {
 
                 lvChat.setAdapter(messageAdapter);
                 lvChat.setSelection(messageAdapter.getCount() - 1);
+            }
+            //Broadcast timer ran out.
+            else if(msg.what == 4)
+            {
+                Support.Users.setAllNotBroadcasting(userAdapter.data);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        userAdapter.notifyDataSetChanged();
+                    }
+                });
+
+                canBroadcast = true;
+                setBroadcastButtonStatus();
             }
             //Reauth needed
             else if(msg.what == 254)

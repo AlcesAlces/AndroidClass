@@ -29,6 +29,11 @@ public class UsersAdapter extends BaseAdapter{
 
     }
 
+    public void dataUpdated()
+    {
+        notifyDataSetChanged();
+    }
+
     public int getCount()
     {
         return data.size();
