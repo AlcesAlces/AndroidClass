@@ -12,24 +12,39 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.alces.adapters.AutocompleteUserAdapter;
 import com.android.alces.com.android.alces.threads.Timeout;
 import com.github.nkzawa.emitter.Emitter;
 import com.google.gson.Gson;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
 
 public class RoomEditActivity extends AppCompatActivity {
     Room thisRoom = null;
     private com.github.nkzawa.socketio.client.Socket mSocket = Global.globalSocket;
     ProgressDialog dialog;
     Timeout timerThread;
+    ArrayList<UserCompact> users = new ArrayList<>();
+    AutocompleteUserAdapter addUsersAuto;
+    AutocompleteUserAdapter removeUsersAuto;
+
+    AutoCompleteTextView tvAddUsers;
+    AutoCompleteTextView tvRemoveUsers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +94,6 @@ public class RoomEditActivity extends AppCompatActivity {
                 disbandFrequency();
             }
         });
-
         final CheckBox cbRange = (CheckBox) findViewById(R.id.edit_checkBox_frange);
         cbRange.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,6 +117,9 @@ public class RoomEditActivity extends AppCompatActivity {
         mSocket.on("refuse_update_room", onEditActivityFailure);
         mSocket.on("refuse_delete_room", onEditActivityFailure);
         mSocket.on("success_delete_room", onDeleteSuccess);
+        mSocket.on("request_all_users", allUsers);
+
+        mSocket.emit("request_all_users", "empty");
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
@@ -160,8 +177,11 @@ public class RoomEditActivity extends AppCompatActivity {
         CheckBox cbRange = (CheckBox) findViewById(R.id.edit_checkBox_frange);
         //Edit Texts
         EditText etName = (EditText) findViewById(R.id.edit_editText_fname);
-        EditText etAddUser = (EditText) findViewById(R.id.edit_editText_addUser);
-        EditText etRemoveUser = (EditText) findViewById(R.id.edit_editText_removeUser);
+        tvAddUsers = (AutoCompleteTextView) findViewById(R.id.edit_auto_addUser);
+        tvRemoveUsers = (AutoCompleteTextView) findViewById(R.id.edit_auto_removeUser);
+        removeUsersAuto = new AutocompleteUserAdapter(RoomEditActivity.this, thisRoom.approvedUsers);
+        tvRemoveUsers.setAdapter(removeUsersAuto);
+
         EditText etRange = (EditText) findViewById(R.id.edit_editText_frange);
         //Text View
         TextView tvOrigin = (TextView) findViewById(R.id.edit_tv_originValue);
@@ -295,19 +315,70 @@ public class RoomEditActivity extends AppCompatActivity {
 
     private void doUpdate()
     {
-        dialog = new ProgressDialog(RoomEditActivity.this);
-        dialog.setMessage("Updating frequency. Please wait....");
-        dialog.setIndeterminate(true);
-        dialog.show();
-        //TODO: Build/Emit data.
+        String addName = tvAddUsers.getText().toString();
+        String removeName = tvRemoveUsers.getText().toString();
+        UserCompact toAdd = Support.Users.findUserByName(addName, users);
+        UserCompact toRemove = Support.Users.findUserByName(removeName, thisRoom.approvedUsers);
 
+        Boolean passCheck = true;
 
-        mSocket.emit("update_room", thisRoom.toJson());
-        //Use timeout class and handler to stop this from going forever.
+        if(addName.length() > 0) {
+            if (toAdd == null) {
+                //User not found. ABORT!
+                Message msg = handler.obtainMessage();
+                msg.what = 5;
+                msg.obj = "Failed to add user. User doesn't exist.";
+                handler.sendMessage(msg);
+                passCheck = false;
+            }
+            else if (thisRoom.isDuplicate(toAdd)){
+                Message msg = handler.obtainMessage();
+                msg.what = 5;
+                msg.obj = "Failed to add user. User is already in the list.";
+                handler.sendMessage(msg);
+                passCheck = false;
+            }
+            else {
+                thisRoom.approvedUsers.add(toAdd);
+            }
+        }
+        if(removeName.length() > 0) {
+            if (toRemove == null) {
+                //User not found. ABORT AGAIN!
+                Message msg = handler.obtainMessage();
+                msg.what = 5;
+                msg.obj = "Failed to remove user. User doesn't exist.";
+                handler.sendMessage(msg);
+                passCheck = false;
+            } else {
+                if(thisRoom.creator.equals(toRemove.name)) {
+
+                    Message msg = handler.obtainMessage();
+                    msg.what = 5;
+                    msg.obj = "Failed to remove user. You cannot remove the owner.";
+                    handler.sendMessage(msg);
+                    passCheck = false;
+                }
+                else {
+                    thisRoom.removeUser(toRemove);
+                }
+            }
+        }
+
+        if(passCheck) {
+
+            dialog = new ProgressDialog(RoomEditActivity.this);
+            dialog.setMessage("Updating frequency. Please wait....");
+            dialog.setIndeterminate(true);
+            dialog.show();
+
+            mSocket.emit("update_room", thisRoom.toJson());
+            //Use timeout class and handler to stop this from going forever.
 //        Thread thread = new Thread(new Timeout(handler), "timeout_thread");
 //        thread.start();
-        timerThread = new Timeout(handler);
-        timerThread.start();
+            timerThread = new Timeout(handler);
+            timerThread.start();
+        }
     }
 
     //Use to signify update success.
@@ -374,6 +445,28 @@ public class RoomEditActivity extends AppCompatActivity {
         }
     };
 
+    private Emitter.Listener allUsers = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+
+            JSONArray message = (JSONArray) args[0];
+//
+//            int numUsers;
+//            try {
+//                numUsers = data.getInt("numUsers");
+//            } catch (JSONException e) {
+//                return;
+//            }
+            //SO! Basically at this point we need to set up a messenger to
+            //communicate with the main thread. I suggest looking at:
+            //https://github.com/nkzawa/socket.io-android-chat/blob/master/app/src/main/java/com/github/nkzawa/socketio/androidchat/MainFragment.java
+            Message msg = handler.obtainMessage();
+            msg.what = 4;
+            msg.obj = message;
+            handler.sendMessage(msg);
+        }
+    };
+
     //Basically this is the ONLY place where we can interact with the UI thread once we've spun off.
     Handler handler = new Handler(new Handler.Callback() {
         @Override
@@ -385,30 +478,64 @@ public class RoomEditActivity extends AppCompatActivity {
             } catch (Exception ex) {
 
             }
+            //Update Success
             if (msg.what == 0) {
-                //Update Success
+
                 Toast.makeText(RoomEditActivity.this,"Successfully updated frequency!",Toast.LENGTH_LONG).show();
-                Intent intent = new Intent();
-                intent.putExtra("payload", "something");
-                setResult(RESULT_OK, intent);
-                finish();
+                tvAddUsers.setText("");
+                tvRemoveUsers.setText("");
+                setComponentsByRoom(thisRoom);
+
+//                Intent intent = new Intent();
+//                intent.putExtra("payload", "something");
+//                setResult(RESULT_OK, intent);
+//                finish();
             }
+            //Deleted success
             else if(msg.what == 1)
             {
-                //Delete Success
                 Toast.makeText(RoomEditActivity.this,"Successfully deleted frequency!",Toast.LENGTH_LONG).show();
                 Intent intent = new Intent();
                 intent.putExtra("payload", "something");
                 setResult(RESULT_OK, intent);
                 finish();
             }
+            //Generic failure
             else if(msg.what == 2)
             {
                 //Whatever failure message the server sent.
                 Toast.makeText(RoomEditActivity.this,(String)msg.obj,Toast.LENGTH_LONG).show();
             }
+            //Timeout
             else if (msg.what == 3) {
                 Toast.makeText(RoomEditActivity.this,"Connection timed out!",Toast.LENGTH_LONG).show();
+            }
+            //Getting all users
+            else if(msg.what == 4)
+            {
+                //Parse the JSONArray that the server gave us. It's full of users!
+                users = new ArrayList<>();
+                JSONArray array = (JSONArray)msg.obj;
+                try
+                {
+                    for(int i = 0; i < array.length(); i++)
+                    {
+                        users.add(new UserCompact(array.getJSONObject(i)));
+                    }
+                }
+                catch(JSONException ex)
+                {
+                    Log.d("VS", "Recieved a bad emit: " + ex.getMessage());
+                }
+
+                //Bind the users we got from the server to our autocomplete adapter.
+                addUsersAuto = new AutocompleteUserAdapter(RoomEditActivity.this, users);
+                tvAddUsers.setAdapter(addUsersAuto);
+            }
+            //Generic in-app error handler
+            else if (msg.what == 5)
+            {
+                Toast.makeText(RoomEditActivity.this, (String)msg.obj, Toast.LENGTH_LONG).show();
             }
             //Reauth needed
             else if(msg.what == 254)
