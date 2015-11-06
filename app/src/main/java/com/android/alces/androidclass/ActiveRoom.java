@@ -109,29 +109,31 @@ public class ActiveRoom extends AppCompatActivity {
         pttButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                    case MotionEvent.ACTION_DOWN:
-                        //Start action
-                        status = true;
-                        setSelfBroadcasting(true);
-                        startStreaming();
-                        //startRecording();
-                        pttButton.setBackgroundColor(Color.GREEN);
-                        //pttButton.getBackground().setColorFilter(Color.parseColor("GREEN"), PorterDuff.Mode.MULTIPLY);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_OUTSIDE:
-                    case MotionEvent.ACTION_CANCEL:
-                        //Stop action
-                        status = false;
-                        status2 = false;
-                        recorder.release();
-                        setSelfBroadcasting(false);
-                        //stopRecording();
-                        pttButton.setBackgroundColor(Color.RED);
-                        //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
-                        //sendMessage();
-                        break;
+                if(isSpeakerBroadcasting()) {
+                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                        case MotionEvent.ACTION_DOWN:
+                            //Start action
+                            status = true;
+                            setSelfBroadcasting(true);
+                            startStreaming();
+                            //startRecording();
+                            pttButton.setBackgroundColor(Color.GREEN);
+                            //pttButton.getBackground().setColorFilter(Color.parseColor("GREEN"), PorterDuff.Mode.MULTIPLY);
+                            break;
+                        case MotionEvent.ACTION_UP:
+                        case MotionEvent.ACTION_OUTSIDE:
+                        case MotionEvent.ACTION_CANCEL:
+                            //Stop action
+                            status = false;
+                            status2 = false;
+                            recorder.release();
+                            setSelfBroadcasting(false);
+                            //stopRecording();
+                            pttButton.setBackgroundColor(Color.RED);
+                            //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
+                            //sendMessage();
+                            break;
+                    }
                 }
                 return true;
             }
@@ -276,6 +278,17 @@ public class ActiveRoom extends AppCompatActivity {
 
     }
 
+    private boolean isSpeakerBroadcasting()
+    {
+        if(speaker.getPlaybackHeadPosition() != 0)
+        {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
     private void setUserBroadcasting(String id)
     {
         canBroadcast = false;
@@ -287,23 +300,23 @@ public class ActiveRoom extends AppCompatActivity {
                 userAdapter.notifyDataSetChanged();
             }
         });
-
-        if(broadcastTimer == null)
-        {
-            broadcastTimer = new BroadcastTimer(handler);
-            broadcastTimer.run();
-        }
-        else if(!broadcastTimer.finished)
-        {
-            broadcastTimer.interrupt();
-            broadcastTimer = new BroadcastTimer(handler);
-            broadcastTimer.run();
-        }
-        else
-        {
-            broadcastTimer = new BroadcastTimer(handler);
-            broadcastTimer.run();
-        }
+//
+//        if(broadcastTimer == null)
+//        {
+//            broadcastTimer = new BroadcastTimer(handler);
+//            broadcastTimer.run();
+//        }
+//        else if(!broadcastTimer.finished)
+//        {
+//            broadcastTimer.interrupt();
+//            //broadcastTimer = new BroadcastTimer(handler);
+//            broadcastTimer.run();
+//        }
+//        else
+//        {
+//            //broadcastTimer = new BroadcastTimer(handler);
+//            broadcastTimer.run();
+//        }
     }
 
     private void setSelfBroadcasting(boolean set)
@@ -398,13 +411,13 @@ public class ActiveRoom extends AppCompatActivity {
     AudioRecord recorder;
     boolean status = false;
 
+
     //Audio Configuration.
     private int sampleRate = 8000;      //How much will be ideal?
     private int channelConfig = AudioFormat.CHANNEL_IN_DEFAULT;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
 
     public void startStreaming() {
-
 
         Thread streamThread = new Thread(new Runnable() {
 
@@ -532,16 +545,16 @@ public class ActiveRoom extends AppCompatActivity {
             //Broadcast timer ran out.
             else if(msg.what == 4)
             {
-                Support.Users.setAllNotBroadcasting(userAdapter.data);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        userAdapter.notifyDataSetChanged();
-                    }
-                });
+//                Support.Users.setAllNotBroadcasting(userAdapter.data);
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        userAdapter.notifyDataSetChanged();
+//                    }
+//                });
 
                 canBroadcast = true;
-                setBroadcastButtonStatus();
+                //setBroadcastButtonStatus();
             }
             //Reauth needed
             else if(msg.what == 254)
