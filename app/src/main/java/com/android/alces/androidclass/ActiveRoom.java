@@ -10,6 +10,7 @@ import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.PlaybackParams;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -60,6 +61,8 @@ public class ActiveRoom extends AppCompatActivity {
     EditText etChat;
     private BroadcastTimer broadcastTimer;
     private Boolean canBroadcast = true;
+
+    int byteCounter = 0;
 
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
      *at https://github.com/nkzawa/socket.io-android-chat this integrates the chat aswell.
@@ -257,30 +260,31 @@ public class ActiveRoom extends AppCompatActivity {
     //Purpose here is to set your broadcast button based on your ability to broadcast
     private void setBroadcastButtonStatus()
     {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-                if(canBroadcast)
-                {
-                    //set reds & enable
-                    pttButton.setBackgroundColor(Color.RED);
-                    pttButton.setEnabled(true);
-                }
-                else
-                {
-                    //set gray and disable
-                    pttButton.setBackgroundColor(Color.GRAY);
-                    pttButton.setEnabled(false);
-                }
-            }
-        });
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                if(canBroadcast)
+//                {
+//                    //set reds & enable
+//                    pttButton.setBackgroundColor(Color.RED);
+//                    pttButton.setEnabled(true);
+//                }
+//                else
+//                {
+//                    //set gray and disable
+//                    pttButton.setBackgroundColor(Color.GRAY);
+//                    pttButton.setEnabled(false);
+//                }
+//            }+
+//        });
 
     }
 
     private boolean isSpeakerBroadcasting()
     {
-        if(speaker.getPlaybackHeadPosition() != 0)
+        //In state playing.
+        if(speaker.getPlaybackHeadPosition() != byteCounter)
         {
             return false;
         }
@@ -513,6 +517,7 @@ public class ActiveRoom extends AppCompatActivity {
             {
                 spBuffer = (byte[])msg.obj;
                 speaker.write(spBuffer, 0, minBufSize);
+                byteCounter += (minBufSize / 2);
             }
             if(msg.what == 1)
             {
