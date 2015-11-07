@@ -10,6 +10,7 @@ import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.PlaybackParams;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -61,6 +62,8 @@ public class ActiveRoom extends AppCompatActivity {
     private BroadcastTimer broadcastTimer;
     private Boolean canBroadcast = true;
 
+    int byteCounter = 0;
+
     /*TODO: Figure out how to design this. There's a good tutorial on how this could look
      *at https://github.com/nkzawa/socket.io-android-chat this integrates the chat aswell.
     */
@@ -72,6 +75,9 @@ public class ActiveRoom extends AppCompatActivity {
         Global._currentHandler = handler;
         lvUsers = (ListView) findViewById(R.id.active_list_users);
         lvChat = (ListView) findViewById(R.id.active_list_chat);
+
+        broadcastTimer = new BroadcastTimer(handler);
+        broadcastTimer.track = speaker;
 
         Bundle extras = getIntent().getExtras();
         //The bundle is a serialized json object with the Gson code.
@@ -109,14 +115,17 @@ public class ActiveRoom extends AppCompatActivity {
         pttButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
-                        //Start action
-                        status = true;
-                        setSelfBroadcasting(true);
-                        startStreaming();
-                        //startRecording();
-                        pttButton.setBackgroundColor(Color.GREEN);
+                        if(isSpeakerBroadcasting()) {
+                            //Start action
+                            status = true;
+                            setSelfBroadcasting(true);
+                            startStreaming();
+                            //startRecording();
+                            pttButton.setBackgroundColor(Color.GREEN);
+                        }
                         //pttButton.getBackground().setColorFilter(Color.parseColor("GREEN"), PorterDuff.Mode.MULTIPLY);
                         break;
                     case MotionEvent.ACTION_UP:
@@ -133,6 +142,7 @@ public class ActiveRoom extends AppCompatActivity {
                         //sendMessage();
                         break;
                 }
+
                 return true;
             }
         });
@@ -255,25 +265,37 @@ public class ActiveRoom extends AppCompatActivity {
     //Purpose here is to set your broadcast button based on your ability to broadcast
     private void setBroadcastButtonStatus()
     {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                if(canBroadcast)
+//                {
+//                    //set reds & enable
+//                    pttButton.setBackgroundColor(Color.RED);
+//                    pttButton.setEnabled(true);
+//                }
+//                else
+//                {
+//                    //set gray and disable
+//                    pttButton.setBackgroundColor(Color.GRAY);
+//                    pttButton.setEnabled(false);
+//                }
+//            }+
+//        });
 
-                if(canBroadcast)
-                {
-                    //set reds & enable
-                    pttButton.setBackgroundColor(Color.RED);
-                    pttButton.setEnabled(true);
-                }
-                else
-                {
-                    //set gray and disable
-                    pttButton.setBackgroundColor(Color.GRAY);
-                    pttButton.setEnabled(false);
-                }
-            }
-        });
+    }
 
+    private boolean isSpeakerBroadcasting()
+    {
+        //In state playing.
+        if(speaker.getPlaybackHeadPosition() != byteCounter)
+        {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
     private void setUserBroadcasting(String id)
@@ -287,23 +309,23 @@ public class ActiveRoom extends AppCompatActivity {
                 userAdapter.notifyDataSetChanged();
             }
         });
-
-        if(broadcastTimer == null)
-        {
-            broadcastTimer = new BroadcastTimer(handler);
-            broadcastTimer.run();
-        }
-        else if(!broadcastTimer.finished)
-        {
-            broadcastTimer.interrupt();
-            broadcastTimer = new BroadcastTimer(handler);
-            broadcastTimer.run();
-        }
-        else
-        {
-            broadcastTimer = new BroadcastTimer(handler);
-            broadcastTimer.run();
-        }
+//
+//        if(broadcastTimer == null)
+//        {
+//            broadcastTimer = new BroadcastTimer(handler);
+//            broadcastTimer.run();
+//        }
+//        else if(!broadcastTimer.finished)
+//        {
+//            broadcastTimer.interrupt();
+//            //broadcastTimer = new BroadcastTimer(handler);
+//            broadcastTimer.run();
+//        }
+//        else
+//        {
+//            //broadcastTimer = new BroadcastTimer(handler);
+//            broadcastTimer.run();
+//        }
     }
 
     private void setSelfBroadcasting(boolean set)
@@ -339,11 +361,6 @@ public class ActiveRoom extends AppCompatActivity {
 
             lvUsers.setAdapter(userAdapter);
         }
-    }
-
-    private void fileChecks()
-    {
-        mFileName = Environment.getExternalStorageDirectory().toString() + "/audiorecordtest.mp4";
     }
 
     private void sendChat(String message)
@@ -398,13 +415,13 @@ public class ActiveRoom extends AppCompatActivity {
     AudioRecord recorder;
     boolean status = false;
 
+
     //Audio Configuration.
     private int sampleRate = 8000;      //How much will be ideal?
     private int channelConfig = AudioFormat.CHANNEL_IN_DEFAULT;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
 
     public void startStreaming() {
-
 
         Thread streamThread = new Thread(new Runnable() {
 
@@ -454,6 +471,20 @@ public class ActiveRoom extends AppCompatActivity {
 
         speaker = new AudioTrack(AudioManager.STREAM_MUSIC,sampleRate,channelConfig,audioFormat,minBufSize, AudioTrack.MODE_STREAM);
 
+        speaker.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
+            @Override
+            public void onMarkerReached(AudioTrack track) {
+                //Reenable the UI.
+                Support.Users.setAllNotBroadcasting(userAdapter.data);
+                userAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onPeriodicNotification(AudioTrack track) {
+                //Nothing to do tbh
+            }
+        });
+
         speaker.play();
     }
 
@@ -500,6 +531,10 @@ public class ActiveRoom extends AppCompatActivity {
             {
                 spBuffer = (byte[])msg.obj;
                 speaker.write(spBuffer, 0, minBufSize);
+                byteCounter += (minBufSize / 2);
+
+                speaker.setNotificationMarkerPosition(byteCounter);
+
             }
             if(msg.what == 1)
             {
@@ -512,7 +547,6 @@ public class ActiveRoom extends AppCompatActivity {
                         try {
                             listItems.add(new UserCompact(tempJson.getJSONObject(i)));
                         } catch (JSONException ex) {
-
                         }
                     }
                 }
@@ -532,16 +566,16 @@ public class ActiveRoom extends AppCompatActivity {
             //Broadcast timer ran out.
             else if(msg.what == 4)
             {
-                Support.Users.setAllNotBroadcasting(userAdapter.data);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        userAdapter.notifyDataSetChanged();
-                    }
-                });
+//                Support.Users.setAllNotBroadcasting(userAdapter.data);
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        userAdapter.notifyDataSetChanged();
+//                    }
+//                });
 
                 canBroadcast = true;
-                setBroadcastButtonStatus();
+                //setBroadcastButtonStatus();
             }
             //Reauth needed
             else if(msg.what == 254)
