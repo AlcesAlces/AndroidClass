@@ -1,13 +1,15 @@
 package com.android.alces.com.android.alces.threads;
 
+import android.media.AudioTrack;
 import android.os.Handler;
 import android.os.Message;
 
 public class BroadcastTimer extends Thread implements Runnable{
 
-    int timeoutTime = 1500;
+    public int goal = 0;
+    public AudioTrack track;
     Handler handler;
-    public Boolean finished = false;
+    public Boolean running = false;
 
     public BroadcastTimer(Handler handle)
     {
@@ -16,18 +18,10 @@ public class BroadcastTimer extends Thread implements Runnable{
 
     public void run()
     {
-        boolean outOfTime = false;
-
-        long startTime = System.currentTimeMillis();
-
-        while(!outOfTime && !this.isInterrupted())
+        running = true;
+        while(goal != track.getPlaybackHeadPosition())
         {
-            long currentTime = System.currentTimeMillis();
-
-            if((currentTime - startTime) >= timeoutTime)
-            {
-                outOfTime = true;
-            }
+            //spin
         }
 
         if(!this.isInterrupted()) {
@@ -35,7 +29,8 @@ public class BroadcastTimer extends Thread implements Runnable{
             Message msg = handler.obtainMessage();
             msg.what = 4;
             handler.sendMessage(msg);
-            finished = true;
         }
+
+        running = false;
     }
 }

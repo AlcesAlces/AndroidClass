@@ -76,6 +76,9 @@ public class ActiveRoom extends AppCompatActivity {
         lvUsers = (ListView) findViewById(R.id.active_list_users);
         lvChat = (ListView) findViewById(R.id.active_list_chat);
 
+        broadcastTimer = new BroadcastTimer(handler);
+        broadcastTimer.track = speaker;
+
         Bundle extras = getIntent().getExtras();
         //The bundle is a serialized json object with the Gson code.
         if(extras != null)
@@ -112,32 +115,34 @@ public class ActiveRoom extends AppCompatActivity {
         pttButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(isSpeakerBroadcasting()) {
-                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                        case MotionEvent.ACTION_DOWN:
+
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_DOWN:
+                        if(isSpeakerBroadcasting()) {
                             //Start action
                             status = true;
                             setSelfBroadcasting(true);
                             startStreaming();
                             //startRecording();
                             pttButton.setBackgroundColor(Color.GREEN);
-                            //pttButton.getBackground().setColorFilter(Color.parseColor("GREEN"), PorterDuff.Mode.MULTIPLY);
-                            break;
-                        case MotionEvent.ACTION_UP:
-                        case MotionEvent.ACTION_OUTSIDE:
-                        case MotionEvent.ACTION_CANCEL:
-                            //Stop action
-                            status = false;
-                            status2 = false;
-                            recorder.release();
-                            setSelfBroadcasting(false);
-                            //stopRecording();
-                            pttButton.setBackgroundColor(Color.RED);
-                            //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
-                            //sendMessage();
-                            break;
-                    }
+                        }
+                        //pttButton.getBackground().setColorFilter(Color.parseColor("GREEN"), PorterDuff.Mode.MULTIPLY);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_OUTSIDE:
+                    case MotionEvent.ACTION_CANCEL:
+                        //Stop action
+                        status = false;
+                        status2 = false;
+                        recorder.release();
+                        setSelfBroadcasting(false);
+                        //stopRecording();
+                        pttButton.setBackgroundColor(Color.RED);
+                        //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
+                        //sendMessage();
+                        break;
                 }
+
                 return true;
             }
         });
@@ -358,11 +363,6 @@ public class ActiveRoom extends AppCompatActivity {
         }
     }
 
-    private void fileChecks()
-    {
-        mFileName = Environment.getExternalStorageDirectory().toString() + "/audiorecordtest.mp4";
-    }
-
     private void sendChat(String message)
     {
         ChatMessage toSend = new ChatMessage(message, Global._user.name, "ohno");
@@ -471,6 +471,20 @@ public class ActiveRoom extends AppCompatActivity {
 
         speaker = new AudioTrack(AudioManager.STREAM_MUSIC,sampleRate,channelConfig,audioFormat,minBufSize, AudioTrack.MODE_STREAM);
 
+        speaker.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
+            @Override
+            public void onMarkerReached(AudioTrack track) {
+                //Reenable the UI.
+                Support.Users.setAllNotBroadcasting(userAdapter.data);
+                userAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onPeriodicNotification(AudioTrack track) {
+                //Nothing to do tbh
+            }
+        });
+
         speaker.play();
     }
 
@@ -518,6 +532,9 @@ public class ActiveRoom extends AppCompatActivity {
                 spBuffer = (byte[])msg.obj;
                 speaker.write(spBuffer, 0, minBufSize);
                 byteCounter += (minBufSize / 2);
+
+                speaker.setNotificationMarkerPosition(byteCounter);
+
             }
             if(msg.what == 1)
             {
@@ -530,7 +547,6 @@ public class ActiveRoom extends AppCompatActivity {
                         try {
                             listItems.add(new UserCompact(tempJson.getJSONObject(i)));
                         } catch (JSONException ex) {
-
                         }
                     }
                 }
