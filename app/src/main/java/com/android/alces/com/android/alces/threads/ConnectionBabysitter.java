@@ -11,9 +11,8 @@ import java.net.URISyntaxException;
 
 public class ConnectionBabysitter extends Thread implements Runnable{
 
-    long startTimeout = 10000;
+    long startTimeout = 1000;
     Handler handler;
-    boolean connecting = false;
 
     public ConnectionBabysitter(Handler handle)
     {
@@ -22,42 +21,31 @@ public class ConnectionBabysitter extends Thread implements Runnable{
 
     public void run() {
 
-        try {
-            Thread.sleep(startTimeout);
-        }
-        catch(InterruptedException ex)
-        {
-            Log.d("SV", "interupt exception bad news bears");
-        }
+        while(!this.isInterrupted()) {
 
-        if(!this.isInterrupted()) {
+            try {
+                Thread.sleep(startTimeout);
+            } catch (InterruptedException ex) {
+                Log.d("SV", "interupt exception bad news bears");
+            }
 
-            if(Global.globalSocket != null) {
-                if (!Global.globalSocket.connected() && !connecting) {
-                    Global.globalSocket.connect();
-                    connecting = true;
-                    if (Global._user != null) {
-                        Global.globalSocket.emit("reauth", Global._user.toJson());
+            if (!this.isInterrupted()) {
+
+                if (Global.globalSocket != null) {
+                    if (Global.globalSocket.connected()) {
+                        Global.globalSocket.emit("ping");
+                    } else {
+                        Global.globalSocket.connect();
                     }
-                    startTimeout = 10000;
-                } else if (Global.globalSocket.connected()) {
-                    startTimeout = 5000;
-                    connecting = false;
                 } else {
-                    startTimeout = 5000;
+                    try {
+                        Global.globalSocket = IO.socket("http://MovieCatalog.cloudapp.net:8080/");
+                        Global.globalSocket.connect();
+                    } catch (URISyntaxException ex) {
+                        Log.d("SV", "How did a URI Exception happen? Oh well, it did");
+                    }
                 }
             }
-            else
-            {
-                try {
-                    Global.globalSocket = IO.socket("http://MovieCatalog.cloudapp.net:8080/");
-                }
-                catch(URISyntaxException ex){
-                    Log.d("SV", "How did a URI Exception happen? OH well, it did");
-                }
-            }
-
-            run();
         }
     }
 

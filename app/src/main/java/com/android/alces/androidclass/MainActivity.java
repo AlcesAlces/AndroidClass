@@ -10,6 +10,7 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
         try{
             mSocket = IO.socket("http://MovieCatalog.cloudapp.net:8080/");
             //Keep track of the socket in global space.
-            Global.globalSocket = mSocket;
         }
         catch(URISyntaxException e)
         {
@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         mSocket.on("refuse", onRefuse);
         mSocket.on("approve", onApprove);
         mSocket.on("reauth", onReauth);
+        mSocket.on("pong", pong);
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
 
@@ -281,6 +282,14 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private Emitter.Listener pong = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+
+            Log.d("WT", "Got heartbeat from server");
+        }
+    };
+
     //Basically this is the ONLY place where we can interact with the UI thread once we've spun off.
     Handler handler = new Handler(new Handler.Callback() {
         @Override
@@ -318,7 +327,6 @@ public class MainActivity extends AppCompatActivity {
             else if(msg.what == 254)
             {
                 //Reauth message.
-                //TODO: Ensure that this logic is executing correctly.
                 if(Global._currentHandler != null)
                 {
                     Message toSend = Global._currentHandler.obtainMessage();
