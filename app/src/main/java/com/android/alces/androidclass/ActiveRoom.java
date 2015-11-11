@@ -8,26 +8,19 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.media.PlaybackParams;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,8 +34,7 @@ import com.google.gson.Gson;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.io.File;
-import java.io.IOException;
+
 import java.util.ArrayList;
 
 public class ActiveRoom extends AppCompatActivity {
@@ -78,7 +70,7 @@ public class ActiveRoom extends AppCompatActivity {
         lvChat = (ListView) findViewById(R.id.active_list_chat);
 
         broadcastTimer = new BroadcastTimer(handler);
-        broadcastTimer.track = speaker;
+        broadcastTimer.track = audioTrack;
 
         Bundle extras = getIntent().getExtras();
         //The bundle is a serialized json object with the Gson code.
@@ -135,7 +127,7 @@ public class ActiveRoom extends AppCompatActivity {
                         //Stop action
                         status = false;
                         status2 = false;
-                        recorder.release();
+                        record.release();
                         setSelfBroadcasting(false);
                         //stopRecording();
                         pttButton.setBackgroundColor(Color.RED);
@@ -302,7 +294,7 @@ public class ActiveRoom extends AppCompatActivity {
     private boolean isSpeakerBroadcasting()
     {
         //In state playing.
-        if(speaker.getPlaybackHeadPosition() != byteCounter)
+        if(audioTrack.getPlaybackHeadPosition() != byteCounter)
         {
             return false;
         }
@@ -425,12 +417,10 @@ public class ActiveRoom extends AppCompatActivity {
         }
     };
 
-    AudioRecord recorder;
+    //Settings
+    AudioRecord record;
     boolean status = false;
-
-
-    //Audio Configuration.
-    private int sampleRate = 8000;      //How much will be ideal?
+    private int sampleRate = 8000;
     private int channelConfig = AudioFormat.CHANNEL_IN_DEFAULT;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
 
@@ -444,24 +434,16 @@ public class ActiveRoom extends AppCompatActivity {
                 int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
 
                 byte[] buffer = new byte[minBufSize];
+                record = new AudioRecord(MediaRecorder.AudioSource.MIC,sampleRate,channelConfig,audioFormat,minBufSize);
 
-                Log.d("VS", "Buffer created of size " + minBufSize);
-
-                //final InetAddress destination = InetAddress.getByName(target.getText().toString());
-                Log.d("VS", "Address retrieved");
-
-
-                recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,sampleRate,channelConfig,audioFormat,minBufSize);
-                Log.d("VS", "Recorder initialized");
-
-                recorder.startRecording();
+                record.startRecording();
 
 
                 while(status == true) {
 
 
                     //reading data from MIC into buffer
-                    minBufSize = recorder.read(buffer, 0, buffer.length);
+                    minBufSize = record.read(buffer, 0, buffer.length);
 
                     //String toSend = Base64.encodeToString(buffer, 0);
                     mSocket.emit("broadcast", buffer);
@@ -473,18 +455,17 @@ public class ActiveRoom extends AppCompatActivity {
     }
 
     private boolean status2 = true;
-    private AudioTrack speaker;
+    private AudioTrack audioTrack;
     byte[] spBuffer = new byte[256];
-    int minBufSize;
+    int minbufsize;
 
     public void setupRecieve()
     {
-        //minimum buffer size. need to be careful. might cause problems. try setting manually if any problems faced
-        minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
+        minbufsize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
 
-        speaker = new AudioTrack(AudioManager.STREAM_MUSIC,sampleRate,channelConfig,audioFormat,minBufSize, AudioTrack.MODE_STREAM);
+        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,sampleRate,channelConfig,audioFormat, minbufsize, AudioTrack.MODE_STREAM);
 
-        speaker.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
+        audioTrack.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
             @Override
             public void onMarkerReached(AudioTrack track) {
                 //Reenable the UI.
@@ -498,7 +479,7 @@ public class ActiveRoom extends AppCompatActivity {
             }
         });
 
-        speaker.play();
+        audioTrack.play();
     }
 
     private Emitter.Listener getBroadcastPart = new Emitter.Listener() {
@@ -543,10 +524,10 @@ public class ActiveRoom extends AppCompatActivity {
             if(msg.what == 0)
             {
                 spBuffer = (byte[])msg.obj;
-                speaker.write(spBuffer, 0, minBufSize);
-                byteCounter += (minBufSize / 2);
+                audioTrack.write(spBuffer, 0, minbufsize);
+                byteCounter += (minbufsize / 2);
 
-                speaker.setNotificationMarkerPosition(byteCounter);
+                audioTrack.setNotificationMarkerPosition(byteCounter);
 
             }
             if(msg.what == 1)
