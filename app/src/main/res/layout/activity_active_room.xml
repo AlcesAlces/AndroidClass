@@ -7,7 +7,8 @@
     tools:context="com.android.alces.androidclass.ActiveRoom"
     android:descendantFocusability="beforeDescendants"
     android:focusableInTouchMode="true"
-    android:background="@drawable/bg_active">
+    android:background="@drawable/bg_active"
+    android:weightSum="1">
 
     <LinearLayout
         android:orientation="vertical"
@@ -27,7 +28,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_marginTop="10dp">
 
@@ -40,59 +41,63 @@
                 android:layout_gravity="center"
                 android:background="#c8ffffff" />
 
-        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="345dp"
         android:orientation="vertical"
-        android:layout_weight=".9"
-        android:weightSum="1">
+        android:weightSum="3"
+        android:layout_weight="0.71">
 
         <ListView
             android:layout_width="fill_parent"
-            android:layout_height="100dp"
+            android:layout_height="162dp"
+            android:id="@+id/active_list_chat"
+            android:fadingEdge="vertical" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false">
+
+            <EditText
+                android:layout_width="250dp"
+                android:layout_height="35dp"
+                android:id="@+id/active_editText_message"
+                android:hint="Send Message"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:background="#c8ffffff"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="SEND"
+                android:id="@+id/active_button_send" />
+
+        </LinearLayout>
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:id="@+id/active_list_users"
             android:columnWidth="100dp"
             android:numColumns="auto_fit"
             android:fadingEdge="vertical"
             android:background="#c8ffffff" />
 
-        <ListView
-            android:layout_width="fill_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/active_list_chat"
-            android:fadingEdge="vertical" />
-
     </LinearLayout>
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <Button
+        android:layout_width="139dp"
+        android:layout_height="wrap_content"
+        android:text="PTT"
+        android:id="@+id/active_button_ptt"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="1.6"
-        android:focusable="false">
-
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:id="@+id/active_editText_message"
-            android:hint="Send Message"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:background="#c8ffffff"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp" />
-
-        <Button
-            android:layout_width="147dp"
-            android:layout_height="wrap_content"
-            android:text="PTT"
-            android:id="@+id/active_button_ptt"
-            android:layout_gravity="center_horizontal"
-            android:outlineProvider="bounds" />
-
-    </LinearLayout>
+        android:outlineProvider="bounds" />
 
 </LinearLayout>

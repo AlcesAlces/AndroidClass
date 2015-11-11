@@ -59,6 +59,7 @@ public class ActiveRoom extends AppCompatActivity {
     private ListView lvChat;
     Button pttButton;
     EditText etChat;
+    Button sendButton;
     private BroadcastTimer broadcastTimer;
     private Boolean canBroadcast = true;
 
@@ -118,7 +119,7 @@ public class ActiveRoom extends AppCompatActivity {
 
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
-                        if(isSpeakerBroadcasting()) {
+                        if (isSpeakerBroadcasting()) {
                             //Start action
                             status = true;
                             setSelfBroadcasting(true);
@@ -164,6 +165,18 @@ public class ActiveRoom extends AppCompatActivity {
                 return false;
             }
         });
+
+
+        sendButton = (Button) findViewById(R.id.active_button_send);
+
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                sendChat(etChat.getText().toString());
+
+            }});
+
 
         mSocket.on("broadcast", getBroadcastPart);
         mSocket.on("room_users_change", roomContentChange);
