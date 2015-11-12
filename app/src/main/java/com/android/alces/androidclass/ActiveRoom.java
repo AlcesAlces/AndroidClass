@@ -124,15 +124,17 @@ public class ActiveRoom extends AppCompatActivity {
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_OUTSIDE:
                     case MotionEvent.ACTION_CANCEL:
-                        //Stop action
-                        status = false;
-                        status2 = false;
-                        record.release();
-                        setSelfBroadcasting(false);
-                        //stopRecording();
-                        pttButton.setBackgroundColor(Color.RED);
-                        //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
-                        //sendMessage();
+                        if (isSpeakerBroadcasting()) {
+                            //Stop action
+                            status = false;
+                            status2 = false;
+                            record.release();
+                            setSelfBroadcasting(false);
+                            //stopRecording();
+                            pttButton.setBackgroundColor(Color.RED);
+                            //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
+                            //sendMessage();
+                        }
                         break;
                 }
 
@@ -446,7 +448,9 @@ public class ActiveRoom extends AppCompatActivity {
                     minBufSize = record.read(buffer, 0, buffer.length);
 
                     //String toSend = Base64.encodeToString(buffer, 0);
-                    mSocket.emit("broadcast", buffer);
+                    if (isSpeakerBroadcasting()) {
+                        mSocket.emit("broadcast", buffer);
+                    }
                 }
             }
 

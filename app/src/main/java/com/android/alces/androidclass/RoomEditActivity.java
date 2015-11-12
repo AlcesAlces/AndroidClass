@@ -95,6 +95,7 @@ public class RoomEditActivity extends AppCompatActivity {
             }
         });
         final CheckBox cbRange = (CheckBox) findViewById(R.id.edit_checkBox_frange);
+
         cbRange.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,9 +105,14 @@ public class RoomEditActivity extends AppCompatActivity {
                     thisRoom.updateIsRanged(false);
                     setComponentsByRoom(thisRoom);
                 }
-                if (cbRange.isChecked() && thisRoom.rangeInfo.range <= 0)
+                else if (thisRoom.rangeInfo.range <= 0)
                 {
                     thisRoom.updateRange(1);
+                    thisRoom.updateIsRanged(true);
+                    setComponentsByRoom(thisRoom);
+                }
+                else
+                {
                     thisRoom.updateIsRanged(true);
                     setComponentsByRoom(thisRoom);
                 }
@@ -277,7 +283,6 @@ public class RoomEditActivity extends AppCompatActivity {
         thisRoom.updateIsPrivate(((CheckBox) findViewById(R.id.edit_checkBox_fprivate)).isChecked());
         thisRoom.updateIsRanged(((CheckBox) findViewById(R.id.edit_checkBox_frange)).isChecked());
 
-        //TODO: Better blank range handle?
         if (((EditText) findViewById(R.id.edit_editText_frange)).getText().toString().trim().isEmpty())
         {
             if (thisRoom.rangeInfo.isRanged)
@@ -486,10 +491,10 @@ public class RoomEditActivity extends AppCompatActivity {
                 tvRemoveUsers.setText("");
                 setComponentsByRoom(thisRoom);
 
-//                Intent intent = new Intent();
-//                intent.putExtra("payload", "something");
-//                setResult(RESULT_OK, intent);
-//                finish();
+                Intent intent = new Intent();
+                intent.putExtra("payload", "something");
+                setResult(RESULT_OK, intent);
+                finish();
             }
             //Deleted success
             else if(msg.what == 1)
