@@ -14,6 +14,7 @@ import android.os.Message;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -108,34 +109,39 @@ public class ActiveRoom extends AppCompatActivity {
         pttButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
-                switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                    case MotionEvent.ACTION_DOWN:
-                        if (isSpeakerBroadcasting()) {
-                            //Start action
-                            status = true;
-                            setSelfBroadcasting(true);
-                            startStreaming();
-                            //startRecording();
-                            pttButton.setBackgroundColor(Color.GREEN);
-                        }
-                        //pttButton.getBackground().setColorFilter(Color.parseColor("GREEN"), PorterDuff.Mode.MULTIPLY);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_OUTSIDE:
-                    case MotionEvent.ACTION_CANCEL:
-                        if (isSpeakerBroadcasting()) {
-                            //Stop action
-                            status = false;
-                            status2 = false;
-                            record.release();
-                            setSelfBroadcasting(false);
-                            //stopRecording();
-                            pttButton.setBackgroundColor(Color.RED);
-                            //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
-                            //sendMessage();
-                        }
-                        break;
+                try {
+                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                        case MotionEvent.ACTION_DOWN:
+                            if (isSpeakerBroadcasting()) {
+                                //Start action
+                                status = true;
+                                setSelfBroadcasting(true);
+                                startStreaming();
+                                //startRecording();
+                                pttButton.setBackgroundColor(Color.GREEN);
+                            }
+                            //pttButton.getBackground().setColorFilter(Color.parseColor("GREEN"), PorterDuff.Mode.MULTIPLY);
+                            break;
+                        case MotionEvent.ACTION_UP:
+                        case MotionEvent.ACTION_OUTSIDE:
+                        case MotionEvent.ACTION_CANCEL:
+                            if (isSpeakerBroadcasting()) {
+                                //Stop action
+                                status = false;
+                                status2 = false;
+                                record.release();
+                                setSelfBroadcasting(false);
+                                //stopRecording();
+                                pttButton.setBackgroundColor(Color.RED);
+                                //pttButton.getBackground().setColorFilter(Color.parseColor("RED"), PorterDuff.Mode.MULTIPLY);
+                                //sendMessage();
+                            }
+                            break;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Log.d("WT", "Unexpected exception: " + ex.getMessage());
                 }
 
                 return true;
@@ -147,16 +153,22 @@ public class ActiveRoom extends AppCompatActivity {
         etChat.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    sendChat(etChat.getText().toString());
+                try {
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        sendChat(etChat.getText().toString());
 //                    InputMethodManager imm =
 //                            (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 //                    imm.hideSoftInputFromWindow(etChat.getWindowToken(), 0);
-                    return true;
-                } else {
-                    int i = 0;
+                        return true;
+                    } else {
+                        int i = 0;
+                    }
                 }
-                return false;
+                catch(Exception ex)
+                {
+                    Log.d("WT", "Unexpected exception: " + ex.getMessage());
+                }
+                    return false;
             }
         });
 
@@ -166,8 +178,13 @@ public class ActiveRoom extends AppCompatActivity {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                sendChat(etChat.getText().toString());
+                try {
+                    sendChat(etChat.getText().toString());
+                }
+                catch(Exception ex)
+                {
+                    Log.d("WT", "Unexpected exception: " + ex.getMessage());
+                }
 
             }});
 
@@ -221,14 +238,19 @@ public class ActiveRoom extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent)
     {
-        if(requestCode == 1)
-        {
-            if(resultCode == RESULT_OK) {
-                Intent intent2 = new Intent();
-                intent2.putExtra("payload", "something");
-                setResult(RESULT_OK, intent2);
-                finish();
+        try {
+            if (requestCode == 1) {
+                if (resultCode == RESULT_OK) {
+                    Intent intent2 = new Intent();
+                    intent2.putExtra("payload", "something");
+                    setResult(RESULT_OK, intent2);
+                    finish();
+                }
             }
+        }
+        catch(Exception ex)
+        {
+            Log.d("WT", "Unexpected exception: " + ex.getMessage());
         }
     }
 
@@ -295,27 +317,33 @@ public class ActiveRoom extends AppCompatActivity {
 
     private boolean isSpeakerBroadcasting()
     {
-        //In state playing.
-        if(audioTrack.getPlaybackHeadPosition() != byteCounter)
+        try {
+            //In state playing.
+            if (audioTrack.getPlaybackHeadPosition() != byteCounter) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        catch(Exception ex)
         {
-            return false;
+            Log.d("WT", "Unexpected exception: " + ex.getMessage());
         }
-        else {
-            return true;
-        }
+        return false;
     }
 
     private void setUserBroadcasting(String id)
     {
-        canBroadcast = false;
-        Support.Users.setBroadcasterById(userAdapter.data, id);
-        setBroadcastButtonStatus();
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                userAdapter.notifyDataSetChanged();
-            }
-        });
+        try {
+            canBroadcast = false;
+            Support.Users.setBroadcasterById(userAdapter.data, id);
+            setBroadcastButtonStatus();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    userAdapter.notifyDataSetChanged();
+                }
+            });
 //
 //        if(broadcastTimer == null)
 //        {
@@ -333,55 +361,67 @@ public class ActiveRoom extends AppCompatActivity {
 //            //broadcastTimer = new BroadcastTimer(handler);
 //            broadcastTimer.run();
 //        }
+        }
+        catch(Exception ex)
+        {
+            Log.d("WT", "Unexpected exception: " + ex.getMessage());
+        }
     }
 
     private void setSelfBroadcasting(boolean set)
     {
-        //broadcasting
-        if(set)
-        {
-            ArrayList<UserCompact> users = userAdapter.data;
+        try {
+            //broadcasting
+            if (set) {
+                ArrayList<UserCompact> users = userAdapter.data;
 
-            for(UserCompact uc : users)
-            {
-                if(uc.name.equals(Global._user.name))
-                {
-                    uc.broadcasting = true;
+                for (UserCompact uc : users) {
+                    if (uc.name.equals(Global._user.name)) {
+                        uc.broadcasting = true;
+                    }
                 }
-            }
 
-            userAdapter = new UsersAdapter(ActiveRoom.this, users);
-            lvUsers.setAdapter(userAdapter);
+                userAdapter = new UsersAdapter(ActiveRoom.this, users);
+                lvUsers.setAdapter(userAdapter);
+            } else {
+                ArrayList<UserCompact> users = userAdapter.data;
+
+                for (UserCompact uc : users) {
+                    if (uc.name.equals(Global._user.name)) {
+                        uc.broadcasting = false;
+                    }
+                }
+                userAdapter = new UsersAdapter(ActiveRoom.this, users);
+
+                lvUsers.setAdapter(userAdapter);
+            }
         }
-        else
+        catch(Exception ex)
         {
-            ArrayList<UserCompact> users = userAdapter.data;
-
-            for(UserCompact uc : users)
-            {
-                if(uc.name.equals(Global._user.name))
-                {
-                    uc.broadcasting = false;
-                }
-            }
-            userAdapter = new UsersAdapter(ActiveRoom.this, users);
-
-            lvUsers.setAdapter(userAdapter);
+            Log.d("WT", "Unexpected exception: " + ex.getMessage());
         }
     }
 
     private void sendChat(String message)
     {
-        ChatMessage toSend = new ChatMessage(message, Global._user.name, "ohno");
-        mSocket.emit("new_message", toSend.toJson());
-        etChat.setText("");
+        try {
+            ChatMessage toSend = new ChatMessage(message, Global._user.name, "ohno");
+            mSocket.emit("new_message", toSend.toJson());
+            etChat.setText("");
+        }
+        catch(Exception ex)
+        {
+            Log.d("WT", "Unexpected exception: " + ex.getMessage());
+        }
     }
 
     private Emitter.Listener roomContentChange = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
 
-            JSONArray data = (JSONArray) args[0];
+            try {
+
+                JSONArray data = (JSONArray) args[0];
 //            String user;
 //            String payload;
 //            try {
@@ -391,10 +431,15 @@ public class ActiveRoom extends AppCompatActivity {
 //                return;
 //            }
 
-            Message msg = handler.obtainMessage();
-            msg.what = 1;
-            msg.obj = data;
-            handler.sendMessage(msg);
+                Message msg = handler.obtainMessage();
+                msg.what = 1;
+                msg.obj = data;
+                handler.sendMessage(msg);
+            }
+            catch(Exception ex)
+            {
+                Log.d("WT", "Unexpected exception: " + ex.getMessage());
+            }
         }
     };
 
@@ -402,7 +447,8 @@ public class ActiveRoom extends AppCompatActivity {
         @Override
         public void call(Object... args) {
 
-            JSONObject data = (JSONObject) args[0];
+            try {
+                JSONObject data = (JSONObject) args[0];
 //            String user;
 //            String payload;
 //            try {
@@ -412,10 +458,15 @@ public class ActiveRoom extends AppCompatActivity {
 //                return;
 //            }
 
-            Message msg = handler.obtainMessage();
-            msg.what = 2;
-            msg.obj = data;
-            handler.sendMessage(msg);
+                Message msg = handler.obtainMessage();
+                msg.what = 2;
+                msg.obj = data;
+                handler.sendMessage(msg);
+            }
+            catch(Exception ex)
+            {
+                Log.d("WT", "Unexpected exception: " + ex.getMessage());
+            }
         }
     };
 
@@ -432,25 +483,30 @@ public class ActiveRoom extends AppCompatActivity {
 
             @Override
             public void run() {
+                try {
+                    int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
 
-                int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
+                    byte[] buffer = new byte[minBufSize];
+                    record = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelConfig, audioFormat, minBufSize);
 
-                byte[] buffer = new byte[minBufSize];
-                record = new AudioRecord(MediaRecorder.AudioSource.MIC,sampleRate,channelConfig,audioFormat,minBufSize);
-
-                record.startRecording();
-
-
-                while(status == true) {
+                    record.startRecording();
 
 
-                    //reading data from MIC into buffer
-                    minBufSize = record.read(buffer, 0, buffer.length);
+                    while (status == true) {
 
-                    //String toSend = Base64.encodeToString(buffer, 0);
-                    if (isSpeakerBroadcasting()) {
-                        mSocket.emit("broadcast", buffer);
+
+                        //reading data from MIC into buffer
+                        minBufSize = record.read(buffer, 0, buffer.length);
+
+                        //String toSend = Base64.encodeToString(buffer, 0);
+                        if (isSpeakerBroadcasting()) {
+                            mSocket.emit("broadcast", buffer);
+                        }
                     }
+                }
+                catch(Exception ex)
+                {
+                    Log.d("WT", "Unexpected exception: " + ex.getMessage());
                 }
             }
 
@@ -465,105 +521,111 @@ public class ActiveRoom extends AppCompatActivity {
 
     public void setupRecieve()
     {
-        minbufsize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
+        try {
+            minbufsize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
 
-        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,sampleRate,channelConfig,audioFormat, minbufsize, AudioTrack.MODE_STREAM);
+            audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfig, audioFormat, minbufsize, AudioTrack.MODE_STREAM);
 
-        audioTrack.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
-            @Override
-            public void onMarkerReached(AudioTrack track) {
-                //Reenable the UI.
-                Support.Users.setAllNotBroadcasting(userAdapter.data);
-                userAdapter.notifyDataSetChanged();
-            }
+            audioTrack.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
+                @Override
+                public void onMarkerReached(AudioTrack track) {
+                    //Reenable the UI.
+                    Support.Users.setAllNotBroadcasting(userAdapter.data);
+                    userAdapter.notifyDataSetChanged();
+                }
 
-            @Override
-            public void onPeriodicNotification(AudioTrack track) {
-                //Nothing to do tbh
-            }
-        });
+                @Override
+                public void onPeriodicNotification(AudioTrack track) {
+                    //Nothing to do tbh
+                }
+            });
 
-        audioTrack.play();
+            audioTrack.play();
+        }
+        catch(Exception ex)
+        {
+            Log.d("WT", "Unexpected exception: " + ex.getMessage());
+        }
     }
 
     private Emitter.Listener getBroadcastPart = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-
-            JSONObject data = (JSONObject) args[0];
-
-            //String encoded;
-            byte[] encoded;
-            String id;
             try {
-                //encoded  = data.getString("payload");
-                encoded = (byte[])data.get("payload");
-                id = data.getString("id");
-            } catch (JSONException e) {
-                return;
+                JSONObject data = (JSONObject) args[0];
+
+                //String encoded;
+                byte[] encoded;
+                String id;
+                try {
+                    //encoded  = data.getString("payload");
+                    encoded = (byte[]) data.get("payload");
+                    id = data.getString("id");
+                } catch (JSONException e) {
+                    return;
+                }
+
+                //We're getting a broadcast that means we need to set the components properly.
+                setUserBroadcasting(id);
+
+
+                Message msg = handler.obtainMessage();
+                msg.obj = encoded;
+                msg.what = 0;
+                handler.sendMessage(msg);
             }
-
-            //We're getting a broadcast that means we need to set the components properly.
-            setUserBroadcasting(id);
-
-
-            Message msg = handler.obtainMessage();
-            msg.obj = encoded;
-            msg.what = 0;
-            handler.sendMessage(msg);
+            catch(Exception ex)
+            {
+                Log.d("WT", "Unexpected exception: " + ex.getMessage());
+            }
         }
     };
 
     Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-
             try {
-                dialog.dismiss();
-                timerThread.interrupt();
-            } catch (Exception ex) {
+                try {
+                    dialog.dismiss();
+                    timerThread.interrupt();
+                } catch (Exception ex) {
 
-            }
-            //Get broadcast.
-            if(msg.what == 0)
-            {
-                spBuffer = (byte[])msg.obj;
-                audioTrack.write(spBuffer, 0, minbufsize);
-                byteCounter += (minbufsize / 2);
+                }
+                //Get broadcast.
+                if (msg.what == 0) {
+                    spBuffer = (byte[]) msg.obj;
+                    audioTrack.write(spBuffer, 0, minbufsize);
+                    byteCounter += (minbufsize / 2);
 
-                audioTrack.setNotificationMarkerPosition(byteCounter);
+                    audioTrack.setNotificationMarkerPosition(byteCounter);
 
-            }
-            if(msg.what == 1)
-            {
-                JSONArray tempJson = (JSONArray) msg.obj;
-                ArrayList<UserCompact> listItems = new ArrayList<>();
+                }
+                if (msg.what == 1) {
+                    JSONArray tempJson = (JSONArray) msg.obj;
+                    ArrayList<UserCompact> listItems = new ArrayList<>();
 
-                //Check to see if the list is empty. Why does this happen?
-                if(tempJson != null) {
-                    for (int i = 0; i < tempJson.length(); i++) {
-                        try {
-                            listItems.add(new UserCompact(tempJson.getJSONObject(i)));
-                        } catch (JSONException ex) {
+                    //Check to see if the list is empty. Why does this happen?
+                    if (tempJson != null) {
+                        for (int i = 0; i < tempJson.length(); i++) {
+                            try {
+                                listItems.add(new UserCompact(tempJson.getJSONObject(i)));
+                            } catch (JSONException ex) {
+                            }
                         }
                     }
+
+                    userAdapter = new UsersAdapter(ActiveRoom.this, listItems);
+
+                    lvUsers.setAdapter(userAdapter);
+                } else if (msg.what == 2) {
+                    messages.add(new ChatMessage((JSONObject) msg.obj));
+                    messageAdapter = new ChatAdapter(ActiveRoom.this, messages);
+
+                    lvChat.setAdapter(messageAdapter);
+                    lvChat.setSelection(messageAdapter.getCount() - 1);
                 }
-
-                userAdapter = new UsersAdapter(ActiveRoom.this, listItems);
-
-                lvUsers.setAdapter(userAdapter);
-            }
-            else if (msg.what == 2)
-            {
-                messages.add(new ChatMessage((JSONObject) msg.obj));
-                messageAdapter = new ChatAdapter(ActiveRoom.this, messages);
-
-                lvChat.setAdapter(messageAdapter);
-                lvChat.setSelection(messageAdapter.getCount() - 1);
-            }
-            //Broadcast timer ran out.
-            else if(msg.what == 4)
-            {
+                //Broadcast timer ran out.
+                else if (msg.what == 4) {
 //                Support.Users.setAllNotBroadcasting(userAdapter.data);
 //                runOnUiThread(new Runnable() {
 //                    @Override
@@ -572,31 +634,34 @@ public class ActiveRoom extends AppCompatActivity {
 //                    }
 //                });
 
-                canBroadcast = true;
-                //setBroadcastButtonStatus();
-            }
-            //Reauth needed
-            else if(msg.what == 254)
-            {
+                    canBroadcast = true;
+                    //setBroadcastButtonStatus();
+                }
+                //Reauth needed
+                else if (msg.what == 254) {
 //                Thread thread = new Thread(new Timeout(handler), "timeout_thread");
 //                thread.start();
-                timerThread = new Timeout(handler);
-                timerThread.start();
-                //TODO: Fix this variable.
-                //done = false;
+                    timerThread = new Timeout(handler);
+                    timerThread.start();
+                    //TODO: Fix this variable.
+                    //done = false;
 
-                dialog = new ProgressDialog(ActiveRoom.this);
-                dialog.setMessage("You lost connection. Reconnecting...");
-                dialog.setIndeterminate(true);
-                dialog.show();
+                    dialog = new ProgressDialog(ActiveRoom.this);
+                    dialog.setMessage("You lost connection. Reconnecting...");
+                    dialog.setIndeterminate(true);
+                    dialog.show();
 
-                mSocket.emit("reauth", Global._user.toJson());
-                mSocket.once("reauth_success", reauthRecover);
+                    mSocket.emit("reauth", Global._user.toJson());
+                    mSocket.once("reauth_success", reauthRecover);
+                }
+                //Reauth recovery
+                else if (msg.what == 253) {
+                    Toast.makeText(ActiveRoom.this, "Reauthed successfully.", Toast.LENGTH_LONG).show();
+                }
             }
-            //Reauth recovery
-            else if(msg.what == 253)
+            catch(Exception e)
             {
-                Toast.makeText(ActiveRoom.this, "Reauthed successfully.", Toast.LENGTH_LONG).show();
+                Log.d("WT", "Unexpected exception: " + e.getMessage());
             }
 
             return true;
